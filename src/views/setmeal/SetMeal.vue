@@ -1,12 +1,12 @@
 <template>
-  <div>
-    <router-view></router-view>
-  </div>
+    <div>
+        套餐管理
+    </div>
 </template>
 
 <script>
 export default {
-  name: 'App'
+    name: "SetMeal"
 }
 </script>
 
