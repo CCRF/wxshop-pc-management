@@ -1,6 +1,5 @@
 <template>
     <div class="mainContent">
-        mainContent区域
         <router-view></router-view>
     </div>
 </template>
