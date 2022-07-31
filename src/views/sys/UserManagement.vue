@@ -2,9 +2,10 @@
   <br>
   <div class="selectInp">
     <el-input   type="text" v-model="queryData"  placeholder="请输入查询内容"></el-input>
-
   </div>
-  <el-button class="setext" type="primary" round @click="query">查询</el-button>
+  <el-button class="setext" type="primary" round @click="query" :disabled="isClickButton">查询</el-button>
+  <el-button class="setext" type="primary" round @click="insertNewUser" :disabled="isClickButton">新增用户</el-button>
+  <el-button class="setext" type="primary" round @click="reload" :disabled="isClickButton">所有用户</el-button>
   <el-table
       :data="userData"
       border
@@ -88,23 +89,24 @@
       <template #default="scope">
         <el-button
             size="mini"
-            @click="handleEdit(scope.row)">编辑</el-button>
+            @click="handleEdit(scope.row)"
+            :disabled="isClickButton">编辑</el-button>
         <el-button
             size="mini"
             type="danger"
-            @click="handleDelete(scope.row)">删除</el-button>
+            @click="handleDelete(scope.row)"
+            :disabled="isClickButton">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
 
-  <el-dialog v-model="outerVisible" title="编辑" width="400px">
+  <el-dialog v-model="outerVisible" title="编辑" width="400px" >
     <div><el-form
         status-icon
         label-width="80px"
         class="demo-ruleForm"
         :model="updateData"
         :rules="rules"
-
     >
       <el-form-item label="编号" >
         <el-input v-model="this.updateData.id"  type="text" readonly/>
@@ -136,6 +138,16 @@
       <el-form-item label="部门编号">
         <el-input type="text" autocomplete="off" v-model="this.updateData.deptId"/>
       </el-form-item>
+      <el-form-item label="角色身份">
+        <el-select v-model="this.roleData.name" class="m-2" >
+          <el-option
+              v-for="item in roleData"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="是否删除">
         <el-input-number  :min="-1" :max="0" type="text" autocomplete="off" v-model="this.updateData.delFlag"/>
       </el-form-item>
@@ -146,6 +158,68 @@
     <div class="dialog-footer">
       <el-button @click="outerVisible = false" >取消</el-button>
       <el-button type="primary" @click="submit">提交</el-button
+      >
+    </div>
+  </el-dialog>
+
+  <el-dialog v-model="insertVisible" title="新增用户" width="400px">
+    <div><el-form
+        status-icon
+        label-width="80px"
+        class="demo-ruleForm"
+        :model="insertData"
+        :rules="rules"
+    >
+      <el-form-item label="编号" >
+        <el-input v-model="this.insertData.id"  type="text" />
+      </el-form-item>
+      <el-form-item label="名字" prop="name">
+        <el-input v-model="this.insertData.name" type="text" autocomplete="off"/>
+      </el-form-item>
+      <el-form-item label="nickName">
+        <el-input type="text" autocomplete="off" v-model="this.insertData.nickName"/>
+      </el-form-item>
+      <el-form-item label="avatar">
+        <el-input v-model="this.insertData.avatar" type="text" autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="密码">
+        <el-input v-model="this.insertData.password" type="password" show-password autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="密码盐">
+        <el-input v-model="this.insertData.salt" type="password" show-password autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="邮箱" prop="email">
+        <el-input type="text" autocomplete="off" v-model="this.insertData.email"/>
+      </el-form-item>
+      <el-form-item label="电话号码" prop="mobile">
+        <el-input type="text" autocomplete="off" v-model="this.insertData.mobile"/>
+      </el-form-item>
+      <el-form-item label="账号状态" prop="status">
+        <el-input-number :min="0" :max="1" type="text" autocomplete="1：账号正常；0：账号弃用" v-model="this.insertData.status"/>
+      </el-form-item>
+      <el-form-item label="部门编号">
+        <el-input type="text" autocomplete="off" v-model="this.insertData.deptId"/>
+      </el-form-item>
+      <el-form-item label="角色身份">
+        <el-select v-model="this.roleData.name" class="m-2" >
+          <el-option
+              v-for="item in roleData"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="是否删除">
+        <el-input-number  :min="-1" :max="0" type="text" autocomplete="off" v-model="this.insertData.delFlag"/>
+      </el-form-item>
+
+
+
+    </el-form></div>
+    <div class="dialog-footer">
+      <el-button @click="insertVisible = false" >取消</el-button>
+      <el-button type="primary" @click="insertSubmit">提交</el-button
       >
     </div>
   </el-dialog>
@@ -163,29 +237,47 @@ import axios from "axios";
 
 
 
+
 export default {
     name: "UserManagement",
   created() {
+      let username=sessionStorage.getItem("username")
       let token=sessionStorage.getItem("token");
       axios.defaults.headers.common['Authorization'] = token;
       let _this=this;
       axios.get("http://localhost:8090/user/findAllUser").then(function (res){
-        console.log("获取到的数据",res);
         _this.userData=res.data
       })
+      axios.get("http://localhost:8090/role/findAll").then(function (res){
+      _this.roleData=res.data.data})
+      axios.get("http://localhost:8090/user/findUserByName/"+username)
+        .then(function (res){
+          console.log("名字信息",res.data)
+          _this.permission=res.data[0]
+          console.log(_this.permission.remark)
+          if(_this.permission.remark==="admin"){
+            _this.isClickButton=false
+          }
+        })
+
+
+
 
   },
 
-
-
-
   data(){
-
-
     return {
+        isClickButton:true,
+        permission:[
+          {
+            name:"",
+            remark:"",
+          }
+        ],
         userData: [
         ],
         outerVisible:false,
+        insertVisible:false,
         updateData:
           {
             id:"",
@@ -200,6 +292,23 @@ export default {
             status:'',
             delFlag:"",
             nowTime:"",
+            roleId:"",
+          },
+      insertData:
+          {
+            id:"",
+            name:"",
+            nickName:"",
+            avatar:"",
+            password:"",
+            salt:"",
+            email:"",
+            mobile:"",
+            deptId:"",
+            status:'',
+            delFlag:"",
+            nowTime:"",
+            roleId:"",
           },
       rules: {
         name: [
@@ -214,16 +323,20 @@ export default {
           { required: true, message: '请输入邮箱地址', trigger: 'blur' },
           { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
         ],
+
       },
-      queryData:''
+      queryData:'',
+      roleData:[
+      ],
+
       }
   },
+
   methods: {
 
     getCurrentTime() {
       //获取当前时间
       let myDate = new Date()
-      let wk = myDate.getDay()
       let yy = String(myDate.getFullYear())
       let mm = myDate.getMonth() + 1
       let dd = String(myDate.getDate() < 10 ? '0' + myDate.getDate() : myDate.getDate())
@@ -235,6 +348,7 @@ export default {
       let nowdata=this.nowDate+this.nowTime
       return nowdata
     },
+
 
     handleDelete(row){
       let _this= this;
@@ -248,7 +362,7 @@ export default {
             _this.$alert(''+row.name+'删除成功','提示',{
               confirmButtonText:'确定',
             })
-            location.reload()
+            _this.reload()
           }
         });
       }).catch(() => {
@@ -262,22 +376,35 @@ export default {
       console.log(this.updateData)
       let _this= this;
 
-      axios.get("http://localhost:8090/user/findById/"+row.id)
-      .then(function (res){
-          console.log("填充",res.data)
-          _this.updateData=res.data[0]
-          console.log(_this.updateData)
-
-          _this.outerVisible=true
-
-      })
+          axios.get("http://localhost:8090/user/findById/"+row.id)
+              .then(function (res){
+                if(res){
+                  console.log("填充",res.data[0])
+                  _this.updateData=res.data[0]
+                  _this.roleData.id=res.data[0].roleId
+                  _this.roleData.name=res.data[0].roleNames
+                  console.log("获取到的角色ID",_this.roleData.id)
+                  console.log("获取到的角色name",_this.roleData.name)
+                  if(_this.roleData.name!=null){
+                    _this.outerVisible = true
+                  }else {
+                    _this.outerVisible = false
+                  }
+                }
+              })
     },
     submit(){
       let _this= this;
+
       this.outerVisible = false;
       let nowDate=this.getCurrentTime();
       this.updateData.nowTime=nowDate;
+      this.updateData.roleId=this.roleData.name;
+
       console.log(JSON.stringify(this.updateData))
+      console.log(this.updateData.roleId);
+
+
 
       let d = JSON.parse(JSON.stringify(this.updateData))
       axios.post("http://localhost:8090/user/updateUser",d).then(function (res){
@@ -285,18 +412,56 @@ export default {
           _this.$alert('修改成功','提示',{
             confirmButtonText:'确定',
           })
-          location.reload()
+          _this.reload()
         }
       })
 
     },
     query(){
-      let _this= this;
-      axios.get("http://localhost:8090/user/findUserByMsg/"+this.queryData)
-      .then(function (res){
-        _this.userData=res.data
-      })
+      if(this.queryData!=null&&this.queryData.length>0){
+        let _this= this;
+        axios.get("http://localhost:8090/user/findUserByMsg/"+this.queryData)
+            .then(function (res){
+              _this.userData=res.data
+            })
+      }else {
+        this.$alert("请输入查询信息！")
+      }
+
     },
+    insertNewUser(){
+      this.roleData.name=null;
+      this.insertVisible=true;
+    },
+    insertSubmit(){
+      let _this= this;
+      this.insertVisible = false;
+      let nowDate=this.getCurrentTime();
+      this.insertData.nowTime=nowDate;
+      this.insertData.roleId=this.roleData.name;
+      console.log(JSON.stringify(this.insertData))
+
+
+
+      let data = JSON.parse(JSON.stringify(this.insertData))
+      axios.post("http://localhost:8090/user/insertUser",data)
+      .then(function (res){
+        if(res){
+          _this.$alert("插入用户成功！");
+          _this.reload()
+        }
+      })
+
+    },
+    reload(){
+      let _this= this;
+      this.$route.path='/index/1'
+      this.$router.replace({path:this.$route.path}).then(function (){
+            _this.$route.path='/index/user';
+            _this.$router.replace({path:_this.$route.path})
+      })
+
+    }
 
 
   },
@@ -317,6 +482,12 @@ export default {
 .selectInp{
   width: 300px;
   float: left;
+}
+.m-2{
+  width: 300px;
+}
+.setext{
+  margin-left: 10px;
 }
 
 
