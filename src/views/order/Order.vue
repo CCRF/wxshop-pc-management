@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-    import {getCurrentInstance, h, onUpdated, ref} from "vue";
+    import {getCurrentInstance, h, onUpdated, onMounted, ref} from "vue";
     import {NInput, NSelect} from "naive-ui";
     import {ElNotification} from 'element-plus';
 
@@ -79,15 +79,13 @@
     const saveData = () => {
         console.log(modifyingDataArr);
         proxy.$api.order.modifyOrder("/order/modifyOrder",
-            // {
-            //     order: modifyingDataArr,
-            // }
+
             modifyingDataArr
         ).then(
             res => {
-                if (!res)
-                    warn("修改失败！")
-                else warn("修改成功！")
+                if (!res.data)
+                    warn("操作失败！")
+                else warn("操作成功！")
             },
             err => {
                 warn(err.reason)
@@ -99,18 +97,6 @@
             warn("请先查询订单再添加！")
         else{
             let temp = [];
-            // if (insertCount > 0) {
-            //     warn("一次只能添加一条数据！");
-            //     return;
-            // }
-            // insertCount += 1;
-            // data.value.push({
-            //     // startTime:,
-            //     // list:,
-            //     // amount:,
-            //     //
-            //     //
-            // })
             proxy.$api.order.insertOrder("/order/insert",
                 {
                     id: 0,
@@ -123,28 +109,23 @@
                 }
             ).then(
                 res => {
-                    if (!res) {
+                    if (!res.data) {
                         warn("添加失败！")
-                        // insertCount = 0
                     } else {
-                        for (let j = 0; j < res.length; j++) {
-                            // if (res[j].orderStatus === -1) status = "已失败"
-                            // else if (res[j].orderStatus === 0) status = "进行中"
-                            // else status = "已完成"
+                        for (let j = 0; j < res.data.length; j++) {
                             temp.push({
-                                key: res[j].id,
-                                list: res[j].list,
-                                startTime: res[j].startTime,
-                                customerId: res[j].customerId,
-                                message: res[j].message,
-                                orderStatus: res[j].orderStatus,
-                                amount: res[j].amount,
-                                id: res[j].id
+                                key: res.data[j].id,
+                                list: res.data[j].list,
+                                startTime: res.data[j].startTime,
+                                customerId: res.data[j].customerId,
+                                message: res.data[j].message,
+                                orderStatus: res.data[j].orderStatus,
+                                amount: res.data[j].amount,
+                                id: res.data[j].id
                             })
                         }
                         data.value = temp
-                        warn("添加成功！")
-                        // insertCount = 0
+                        warn("添加了一条“进行中”订单！")
                     }
                 },
                 err => {
@@ -182,7 +163,6 @@
                         let temp = data.value[index]
                         delete temp.key
                         modifyingDataArr[row.id] = temp;
-                        // console.log(modifyingDataArr)
                     }
                 });
             }
@@ -198,7 +178,6 @@
                         let temp = data.value[index]
                         delete temp.key
                         modifyingDataArr[row.id] = temp;
-                        // console.log(modifyingDataArr)
                     }
                 });
             }
@@ -214,7 +193,6 @@
                         let temp = data.value[index]
                         delete temp.key
                         modifyingDataArr[row.id] = temp;
-                        // console.log(modifyingDataArr)
                     }
                 });
             }
@@ -244,7 +222,6 @@
                         let temp = data.value[index]
                         delete temp.key
                         modifyingDataArr[row.id] = temp;
-                        // console.log(modifyingDataArr)
                     }
                 });
             }
@@ -260,7 +237,6 @@
                         let temp = data.value[index]
                         delete temp.key
                         modifyingDataArr[row.id] = temp;
-                        // console.log(modifyingDataArr)
                     }
                 });
             }
@@ -276,7 +252,6 @@
                         let temp = data.value[index]
                         delete temp.key
                         modifyingDataArr[row.id] = temp;
-                        // console.log(modifyingDataArr)
                     }
                 });
             }
@@ -287,34 +262,34 @@
 
     })
     const deleteOrder = () => {
-        let temp = [];
-        proxy.$api.order.deleteOrder("/order/deleteOrder", {
-            orderId: checkedRowKeysRef.value,
-            status: getOrderStatus
-        }).then(
-            res => {
-                for (let j = 0; j < res.length; j++) {
-                    // if (res[j].orderStatus === -1) status = "已失败"
-                    // else if (res[j].orderStatus === 0) status = "进行中"
-                    // else status = "已完成"
-                    temp.push({
-                        key: res[j].id,
-                        list: res[j].list,
-                        startTime: res[j].startTime,
-                        customerId: res[j].customerId,
-                        message: res[j].message,
-                        orderStatus: res[j].orderStatus,
-                        amount: res[j].amount,
-                        id: res[j].id
-                    })
-                }
-                data.value = temp
-                checkedRowKeysRef.value.splice(0,checkedRowKeysRef.value.length)
-            },
-            err => {
-                warn(err.reason)
-            })
-
+        if(checkedRowKeysRef.value.length === 0)
+            warn("请先选择要删除的订单！")
+        else{
+            let temp = [];
+            proxy.$api.order.deleteOrder("/order/deleteOrder", {
+                orderId: checkedRowKeysRef.value,
+                status: getOrderStatus
+            }).then(
+                res => {
+                    for (let j = 0; j < res.data.length; j++) {
+                        temp.push({
+                            key: res.data[j].id,
+                            list: res.data[j].list,
+                            startTime: res.data[j].startTime,
+                            customerId: res.data[j].customerId,
+                            message: res.data[j].message,
+                            orderStatus: res.data[j].orderStatus,
+                            amount: res.data[j].amount,
+                            id: res.data[j].id
+                        })
+                    }
+                    data.value = temp
+                    checkedRowKeysRef.value.splice(0,checkedRowKeysRef.value.length)
+                },
+                err => {
+                    warn(err.reason)
+                })
+        }
     }
     const rowClassName = (row) => {
         console.log(row)
@@ -324,7 +299,9 @@
         return "";
     }
     let columns = createColumns();
-
+    onMounted(()=>{
+        getOrder(1)
+    })
     const getOrder = (i) => {
         getOrderStatus = i
         let temp = [];
@@ -332,19 +309,16 @@
         if (i === 1)
             proxy.$api.order.getOrder("/order/getCurrentOrder").then(
                 res => {
-                    for (let j = 0; j < res.length; j++) {
-                        // if (res[j].orderStatus === -1) status = "已失败"
-                        // else if (res[j].orderStatus === 0) status = "进行中"
-                        // else status = "已完成"
+                    for (let j = 0; j < res.data.length; j++) {
                         temp.push({
-                            key: res[j].id,
-                            list: res[j].list,
-                            startTime: res[j].startTime,
-                            customerId: res[j].customerId,
-                            message: res[j].message,
-                            orderStatus: res[j].orderStatus,
-                            amount: res[j].amount,
-                            id: res[j].id
+                            key: res.data[j].id,
+                            list: res.data[j].list,
+                            startTime: res.data[j].startTime,
+                            customerId: res.data[j].customerId,
+                            message: res.data[j].message,
+                            orderStatus: res.data[j].orderStatus,
+                            amount: res.data[j].amount,
+                            id: res.data[j].id
                         })
                     }
                     data.value = temp
@@ -354,19 +328,16 @@
                 })
         else proxy.$api.order.getOrder("/order/getHistoryOrder").then(
             res => {
-                for (let j = 0; j < res.length; j++) {
-                    // if (res[j].orderStatus === -1) status = "已失败"
-                    // else if (res[j].orderStatus === 0) status = "进行中"
-                    // else status = "已完成"
+                for (let j = 0; j < res.data.length; j++) {
                     temp.push({
-                        key: res[j].id,
-                        list: res[j].list,
-                        startTime: res[j].startTime,
-                        customerId: res[j].customerId,
-                        message: res[j].message,
-                        orderStatus: res[j].orderStatus,
-                        amount: res[j].amount,
-                        id: res[j].id
+                        key: res.data[j].id,
+                        list: res.data[j].list,
+                        startTime: res.data[j].startTime,
+                        customerId: res.data[j].customerId,
+                        message: res.data[j].message,
+                        orderStatus: res.data[j].orderStatus,
+                        amount: res.data[j].amount,
+                        id: res.data[j].id
                     })
                 }
                 data.value = temp
@@ -396,7 +367,7 @@
     margin-left: 30px;
     position: absolute;
     right: 200px;
-    top: 75px;
+    top: 100px;
     z-index: 7;
   }
 

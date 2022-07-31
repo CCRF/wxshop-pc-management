@@ -1,5 +1,8 @@
 import * as login from "@/http/modules/login";
 import * as menu from "@/http/modules/menu";
+import * as order from "@/http/modules/order";
+import * as roleManagement from "@/http/modules/roleManagement";
+import * as SetMeal from "@/http/modules/SetMeal";
 
 export default {
     login,

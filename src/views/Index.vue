@@ -25,6 +25,6 @@ export default {
 <style scoped>
     .index{
         width:100%;
-        height:520px;
+        height:673px;
     }
 </style>
