@@ -42,3 +42,7 @@ export function get(url, params) {
 export function post(url, params) {
     return instance.post(url, params)
 }
+
+export function del(url, params) {
+    return instance.delete(url, params)
+}
