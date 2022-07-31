@@ -20,6 +20,7 @@
             :before-close="handleClose"
             append-to-body
             :data="tableData"
+            @close='cleanMsg'
         >
           <el-form :model="newMessage" label-width="120px">
             <el-form-item label="角色">
@@ -74,6 +75,7 @@
       width="30%"
       :before-close="handleClose"
       append-to-body
+      @close='cleanMsg'
   >
     <el-input
         v-model="addName"
@@ -127,8 +129,13 @@ const cities = ['系统管理',
   '订单管理', '订单查看', '订单新增', '订单修改', '订单删除',
   '套餐管理', '套餐查看', '套餐新增', '套餐修改', '套餐删除',
   '接口文档', '文档查看']
+
+
+
+
 export default {
   name: "RoleManangement",
+
 
   data() {
     return {
