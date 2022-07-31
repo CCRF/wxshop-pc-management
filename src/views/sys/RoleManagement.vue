@@ -1,13 +1,13 @@
 <template>
   <el-input v-model="input" placeholder="搜索" style="width: 70%"/>
-  <el-button type="success" plain @click="search()">查询</el-button>
+  <el-button type="success" plain @click="search()" :disabled="clickButton">查询</el-button>
   <el-table :data="tableData" stripe style="width: 100%">
     <el-table-column prop="remark" label="角色" width="250"/>
     <el-table-column prop="name" label="名字" width="300"/>
     <el-table-column prop="createTime" label="创建时间" width="600"/>
     <el-table-column fixed="right" label="选择">
       <template #default="scope">
-        <el-button link type="primary" size="small"
+        <el-button link type="primary" size="small" :disabled="clickButton"
                    @click="getNewMsg(scope.row.remark,scope.row.name,scope.row.id);dialogVisibleUpdate=true"
         >修改
         </el-button
@@ -49,7 +49,7 @@
       </span>
           </template>
         </el-dialog>
-        <el-button link type="primary" size="small" @click="getId(scope.row.id);dialogVisibleDelete = true">
+        <el-button link type="primary" size="small" :disabled="clickButton" @click="getId(scope.row.id);dialogVisibleDelete = true">
           删除
         </el-button>
         <el-dialog v-model="dialogVisibleDelete" :modal="false" title="Warning" width="30%" center>
@@ -68,7 +68,7 @@
       </template>
     </el-table-column>
   </el-table>
-  <el-button type="warning" plain @click="dialogVisibleAdd = true">新增</el-button>
+  <el-button type="warning" :disabled="clickButton" plain @click="dialogVisibleAdd = true">新增</el-button>
   <el-dialog
       title="新增"
       v-model="dialogVisibleAdd"
@@ -154,14 +154,21 @@ export default {
       },
       cities,
       checkboxGroup1,
-      input
+      input,
+      clickButton: false
     }
   },
   mounted() {
     this.getMsg()
-
+    this.definiteMsg()
   },
   methods: {
+
+    definiteMsg(){
+      if (sessionStorage.getItem("username")!=="admin"){
+        this.clickButton=true
+      }
+    },
 
     getMsg() {
       this.$api.roleManagement.getAll("/role/findAll").then(res => {
