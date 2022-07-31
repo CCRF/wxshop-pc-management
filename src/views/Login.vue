@@ -1,4 +1,4 @@
-<template>
+n<template>
   <div>
     <label for="userName">用户名：</label><input type="text" id="userName" v-model="loginForm.username">
     <label for="password">密码：</label><input type="text" id="password" v-model="loginForm.password">
@@ -7,6 +7,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: 'LoginPage',
   data() {
@@ -18,14 +20,20 @@ export default {
     }
   },
   methods:{
+
     login(){
       //1、登录
+
       this.$api.login.login("/login", this.loginForm).then(res=>{
         console.log("登录成功");
         console.log(res);
 
         //2、存储token(存储在session中)
         sessionStorage.setItem("token", res.data.token)
+        sessionStorage.setItem("username", this.loginForm.username)
+
+
+        console.log(res.data.token)
 
         //3、获取用户菜单(该数据要作用于SideBar.vue中)
         this.$api.menu.findNavTree("/menu/findNavTree", {"userName":this.loginForm.username})
