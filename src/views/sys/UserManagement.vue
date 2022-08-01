@@ -107,6 +107,7 @@
         class="demo-ruleForm"
         :model="updateData"
         :rules="rules"
+        ref="updateData"
     >
       <el-form-item label="编号" >
         <el-input v-model="this.updateData.id"  type="text" readonly/>
@@ -133,7 +134,7 @@
         <el-input type="text" autocomplete="off" v-model="this.updateData.mobile"/>
       </el-form-item>
       <el-form-item label="账号状态" prop="status">
-        <el-input-number :min="0" :max="1" type="text" autocomplete="1：账号正常；0：账号弃用" v-model="this.updateData.status"/>
+        <el-input-number :min="0" :max="1" type="text" autocomplete="off" v-model="this.updateData.status"/>
       </el-form-item>
       <el-form-item label="部门编号">
         <el-input type="text" autocomplete="off" v-model="this.updateData.deptId"/>
@@ -157,7 +158,7 @@
     </el-form></div>
     <div class="dialog-footer">
       <el-button @click="outerVisible = false" >取消</el-button>
-      <el-button type="primary" @click="submit">提交</el-button
+      <el-button type="primary" @click="submit('updateData')">提交</el-button
       >
     </div>
   </el-dialog>
@@ -169,8 +170,9 @@
         class="demo-ruleForm"
         :model="insertData"
         :rules="rules"
+        ref="insertData"
     >
-      <el-form-item label="编号" >
+      <el-form-item label="编号" prop="id">
         <el-input v-model="this.insertData.id"  type="text" />
       </el-form-item>
       <el-form-item label="名字" prop="name">
@@ -195,7 +197,7 @@
         <el-input type="text" autocomplete="off" v-model="this.insertData.mobile"/>
       </el-form-item>
       <el-form-item label="账号状态" prop="status">
-        <el-input-number :min="0" :max="1" type="text" autocomplete="1：账号正常；0：账号弃用" v-model="this.insertData.status"/>
+        <el-input-number :min="0" :max="1" type="text" autocomplete="off"  v-model="this.insertData.status"/>
       </el-form-item>
       <el-form-item label="部门编号">
         <el-input type="text" autocomplete="off" v-model="this.insertData.deptId"/>
@@ -219,7 +221,7 @@
     </el-form></div>
     <div class="dialog-footer">
       <el-button @click="insertVisible = false" >取消</el-button>
-      <el-button type="primary" @click="insertSubmit">提交</el-button
+      <el-button type="primary" @click="insertSubmit('insertData')">提交</el-button
       >
     </div>
   </el-dialog>
@@ -305,12 +307,15 @@ export default {
             email:"",
             mobile:"",
             deptId:"",
-            status:'',
+            status:1,
             delFlag:"",
             nowTime:"",
             roleId:"",
           },
       rules: {
+          id:[
+            {required: true, message: '请输入编号', trigger: 'blur'}
+          ],
         name: [
           {required: true, message: '请输入名字', trigger: 'blur'},
           {min: 3, max: 10, message: '长度在 3 到 5 个字符', trigger: 'blur'}
@@ -382,9 +387,7 @@ export default {
                   console.log("填充",res.data[0])
                   _this.updateData=res.data[0]
                   _this.roleData.id=res.data[0].roleId
-                  _this.roleData.name=res.data[0].roleNames
-                  console.log("获取到的角色ID",_this.roleData.id)
-                  console.log("获取到的角色name",_this.roleData.name)
+                  _this.roleData.name=Number(_this.roleData.id)
                   if(_this.roleData.name!=null){
                     _this.outerVisible = true
                   }else {
@@ -393,28 +396,33 @@ export default {
                 }
               })
     },
-    submit(){
+    submit(formName){
       let _this= this;
-
-      this.outerVisible = false;
       let nowDate=this.getCurrentTime();
       this.updateData.nowTime=nowDate;
       this.updateData.roleId=this.roleData.name;
-
+      console.log("id",this.updateData.roleId)
       console.log(JSON.stringify(this.updateData))
-      console.log(this.updateData.roleId);
-
-
-
       let d = JSON.parse(JSON.stringify(this.updateData))
-      axios.post("http://localhost:8090/user/updateUser",d).then(function (res){
-        if (res.data){
-          _this.$alert('修改成功','提示',{
-            confirmButtonText:'确定',
+
+
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          axios.post("http://localhost:8090/user/updateUser",d).then(function (res){
+            if (res.data){
+              _this.$alert('修改成功','提示',{
+                confirmButtonText:'确定',
+              })
+              _this.reload()
+            }
           })
-          _this.reload()
+          this.outerVisible = false;
+        } else {
+          console.log('error submit!!');
+          return false;
         }
       })
+
 
     },
     query(){
@@ -425,32 +433,45 @@ export default {
               _this.userData=res.data
             })
       }else {
-        this.$alert("请输入查询信息！")
+        this.$message({
+          type: 'warning',
+          message: '请输入查询内容！'
+        });
       }
 
     },
     insertNewUser(){
-      this.roleData.name=null;
+      this.roleData.name=3;
       this.insertVisible=true;
     },
-    insertSubmit(){
+    insertSubmit(formName){
       let _this= this;
-      this.insertVisible = false;
+
       let nowDate=this.getCurrentTime();
       this.insertData.nowTime=nowDate;
       this.insertData.roleId=this.roleData.name;
+      console.log("roleId",this.insertData.roleId)
       console.log(JSON.stringify(this.insertData))
-
-
-
       let data = JSON.parse(JSON.stringify(this.insertData))
-      axios.post("http://localhost:8090/user/insertUser",data)
-      .then(function (res){
-        if(res){
-          _this.$alert("插入用户成功！");
-          _this.reload()
+
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          axios.post("http://localhost:8090/user/insertUser",data)
+          .then(function (res){
+            if(res){
+              _this.$alert("插入用户成功！");
+              _this.reload()
+            }
+          })
+          this.insertVisible = false;
+        } else {
+          console.log('error submit!!');
+          return false;
         }
       })
+
+
+
 
     },
     reload(){
