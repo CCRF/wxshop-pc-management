@@ -191,7 +191,6 @@ export default {
         this.tableData=res.data.rows
         this.totalCount = res.data.totalCount;
 
-
       })
     },
     getId(id) {

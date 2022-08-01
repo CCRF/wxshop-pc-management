@@ -7,7 +7,7 @@
   <el-button class="setext" type="primary" round @click="insertNewUser" :disabled="isClickButton">新增用户</el-button>
   <el-button class="setext" type="primary" round @click="reload" :disabled="isClickButton">所有用户</el-button>
   <el-table
-      :data="userData"
+      :data="userData.slice((currentPage-1)*PageSize,currentPage*PageSize)"
       border
       class="table"
       style="width: 100%">
@@ -228,8 +228,12 @@
   <br>
   <el-pagination
       background
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-size="PageSize"
       layout="prev, pager, next"
-      :total="2"
+      :total="this.totalCount"
       class="mt-4"
   />
 </template>
@@ -248,27 +252,27 @@ export default {
       axios.defaults.headers.common['Authorization'] = token;
       let _this=this;
       axios.get("http://localhost:8090/user/findAllUser").then(function (res){
-        _this.userData=res.data
+        _this.userData=res.data.data
+        _this.totalCount=res.data.data.length
       })
-      axios.get("http://localhost:8090/role/findAll").then(function (res){
-      _this.roleData=res.data.data})
+      axios.get("http://localhost:8090/user/findAllRole").then(function (res){
+        console.log("信息",res.data.data)
+        _this.roleData=res.data.data})
       axios.get("http://localhost:8090/user/findUserByName/"+username)
         .then(function (res){
-          console.log("名字信息",res.data)
-          _this.permission=res.data[0]
+          _this.permission=res.data.data[0]
           console.log(_this.permission.remark)
           if(_this.permission.remark==="admin"){
             _this.isClickButton=false
           }
         })
-
-
-
-
   },
 
   data(){
     return {
+        PageSize:10,
+        currentPage:1,
+        totalCount:"",
         isClickButton:true,
         permission:[
           {
@@ -338,6 +342,14 @@ export default {
   },
 
   methods: {
+    handleSizeChange(val) {
+      this.PageSize=val
+      // 注意：在改变每页显示的条数时，要将页码显示到第一页
+      this.currentPage=1
+    },
+    handleCurrentChange(val) {
+      this.currentPage=val
+    },
 
     getCurrentTime() {
       //获取当前时间
@@ -363,7 +375,7 @@ export default {
         type: 'warning'
       }).then(() => {
         axios.delete ("http://localhost:8090/user/deleteUser/"+row.id).then(function (res){
-          if (res.data){
+          if (res.data.data){
             _this.$alert(''+row.name+'删除成功','提示',{
               confirmButtonText:'确定',
             })
@@ -384,9 +396,9 @@ export default {
           axios.get("http://localhost:8090/user/findById/"+row.id)
               .then(function (res){
                 if(res){
-                  console.log("填充",res.data[0])
-                  _this.updateData=res.data[0]
-                  _this.roleData.id=res.data[0].roleId
+                  console.log("填充",res.data.data[0])
+                  _this.updateData=res.data.data[0]
+                  _this.roleData.id=res.data.data[0].roleId
                   _this.roleData.name=Number(_this.roleData.id)
                   if(_this.roleData.name!=null){
                     _this.outerVisible = true
@@ -430,7 +442,8 @@ export default {
         let _this= this;
         axios.get("http://localhost:8090/user/findUserByMsg/"+this.queryData)
             .then(function (res){
-              _this.userData=res.data
+              _this.userData=res.data.data
+              _this.totalCount=res.data.data.length
             })
       }else {
         this.$message({
