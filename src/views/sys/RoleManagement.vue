@@ -1,6 +1,38 @@
 <template>
   <el-input v-model="input" placeholder="搜索" style="width: 70%"/>
   <el-button type="success" plain @click="search()" :disabled="clickButton">查询</el-button>
+  <el-button type="warning" :disabled="clickButton" plain @click="dialogVisibleAdd = true">新增</el-button>
+  <el-dialog
+      title="新增"
+      v-model="dialogVisibleAdd"
+      width="30%"
+      :before-close="handleClose"
+      append-to-body
+      @close='cleanMsg'
+  >
+    <el-input
+        v-model="addName"
+        placeholder="名称"
+        size="small"
+    />
+    <br/><br/>
+    <el-input
+        v-model="addRole"
+        placeholder="角色名称"
+        size="small"
+    />
+    <br/><br/>
+
+
+    <template #footer>
+      <span class="target">
+        <el-button @click="cleanMsg();dialogVisibleAdd = false">取 消</el-button>
+        <el-button type="primary" @click="addMsg();dialogVisibleAdd = false"
+        >确 定</el-button
+        >
+      </span>
+    </template>
+  </el-dialog>
   <el-table :data="tableData" stripe style="width: 100%">
     <el-table-column prop="remark" label="角色" width="250"/>
     <el-table-column prop="name" label="名字" width="300"/>
@@ -68,38 +100,17 @@
       </template>
     </el-table-column>
   </el-table>
-  <el-button type="warning" :disabled="clickButton" plain @click="dialogVisibleAdd = true">新增</el-button>
-  <el-dialog
-      title="新增"
-      v-model="dialogVisibleAdd"
-      width="30%"
-      :before-close="handleClose"
-      append-to-body
-      @close='cleanMsg'
-  >
-    <el-input
-        v-model="addName"
-        placeholder="名称"
-        size="small"
-    />
-    <br/><br/>
-    <el-input
-        v-model="addRole"
-        placeholder="角色名称"
-        size="small"
-    />
-    <br/><br/>
 
-
-    <template #footer>
-      <span class="target">
-        <el-button @click="cleanMsg();dialogVisibleAdd = false">取 消</el-button>
-        <el-button type="primary" @click="addMsg();dialogVisibleAdd = false"
-        >确 定</el-button
-        >
-      </span>
-    </template>
-  </el-dialog>
+  <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-size="10"
+      :pager-count="11"
+      layout="prev, pager, next"
+      :total="totalCount"
+      class="limit"
+  />
 </template>
 
 <script>
@@ -155,7 +166,11 @@ export default {
       cities,
       checkboxGroup1,
       input,
-      clickButton: false
+      clickButton: false,
+      totalCount: 100,
+      currentPage: 1,
+      pageSize: 10,
+
     }
   },
   mounted() {
@@ -171,10 +186,12 @@ export default {
     },
 
     getMsg() {
-      this.$api.roleManagement.getAll("/role/findAll").then(res => {
+      this.$api.roleManagement.getAll(`/role/findAll/${this.currentPage}/${this.pageSize}`).then(res => {
         console.log(res)
+        this.tableData=res.data.rows
+        this.totalCount = res.data.totalCount;
 
-        this.tableData = res.data
+
       })
     },
     getId(id) {
@@ -274,6 +291,15 @@ export default {
 
     },
 
+    handleSizeChange(val) {
+      this.pageSize = val;
+      this.getMsg();
+    },
+    handleCurrentChange(val) {
+      this.currentPage = val;
+      this.getMsg();
+    },
+
     cleanMsg() {
       this.checkboxGroup1 = []
       addName.value = null
@@ -287,6 +313,6 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 </style>
