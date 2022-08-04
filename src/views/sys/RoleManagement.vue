@@ -4,6 +4,7 @@
   <el-button type="warning" :disabled="clickButton" plain @click="dialogVisibleAdd = true">新增</el-button>
   <el-dialog
       title="新增"
+      :plain="true"
       v-model="dialogVisibleAdd"
       width="30%"
       :before-close="handleClose"
@@ -11,14 +12,14 @@
       @close='cleanMsg'
   >
     <el-input
-        v-model="addName"
-        placeholder="名称"
+        v-model="addRole"
+        placeholder="角色"
         size="small"
     />
     <br/><br/>
     <el-input
-        v-model="addRole"
-        placeholder="角色名称"
+        v-model="addName"
+        placeholder="名字"
         size="small"
     />
     <br/><br/>
@@ -33,21 +34,54 @@
       </span>
     </template>
   </el-dialog>
+
   <el-table :data="tableData" stripe style="width: 100%">
     <el-table-column prop="remark" label="角色" width="250"/>
     <el-table-column prop="name" label="名字" width="300"/>
     <el-table-column prop="createTime" label="创建时间" width="600"/>
-    <el-table-column fixed="right" label="选择">
+    <el-table-column fixed="right" label="选择" width="180">
+
       <template #default="scope">
-        <el-button link type="primary" size="small" :disabled="clickButton"
+        <el-button link type="primary" :plain="true" size="small" :disabled="clickButton"
+                   @click="getNewMsg(scope.row.remark,scope.row.name,scope.row.id);dialogVisibleUpdateAuthority=true"
+        >权限
+        </el-button
+        >
+        <el-dialog
+            title="修改"
+            v-model="dialogVisibleUpdateAuthority"
+            :plain="true"
+            :modal="false"
+            :before-close="handleClose"
+            append-to-body
+            @close='cleanMsg'
+        >
+          <el-tree
+              ref="tree"
+              :data="dataAuthority"
+              show-checkbox
+              :default-checked-keys="arrayAuthority"
+              node-key="id"
+              :props="defaultProps"
+          />
+          <template #footer>
+      <span class="target">
+        <el-button @click="cleanMsg();dialogVisibleUpdateAuthority = false">取 消</el-button>
+        <el-button type="primary" @click="updateAuthority();dialogVisibleUpdateAuthority = false"
+        >确 定</el-button
+        >
+      </span>
+          </template>
+        </el-dialog>
+        <el-button link type="primary" :plain="true" size="small" :disabled="clickButton"
                    @click="getNewMsg(scope.row.remark,scope.row.name,scope.row.id);dialogVisibleUpdate=true"
-        >修改
+        >修改信息
         </el-button
         >
         <el-dialog
             title="修改"
             v-model="dialogVisibleUpdate"
-            width="70%"
+            :plain="true"
             :modal="false"
             :before-close="handleClose"
             append-to-body
@@ -60,13 +94,6 @@
             </el-form-item>
             <el-form-item label="名字">
               <el-input v-model="newMessage.name"/>
-            </el-form-item>
-            <el-form-item label="权限">
-              <el-checkbox-group v-model="checkboxGroup1" size="large">
-                <el-checkbox-button v-for="city in cities" :key="city" :label="city">
-                  {{ city }}
-                </el-checkbox-button>
-              </el-checkbox-group>
             </el-form-item>
 
           </el-form>
@@ -81,7 +108,8 @@
       </span>
           </template>
         </el-dialog>
-        <el-button link type="primary" size="small" :disabled="clickButton" @click="getId(scope.row.id);dialogVisibleDelete = true">
+        <el-button link type="primary" :plain="true" size="small" :disabled="clickButton"
+                   @click="getId(scope.row.id);dialogVisibleDelete = true">
           删除
         </el-button>
         <el-dialog v-model="dialogVisibleDelete" :modal="false" title="Warning" width="30%" center>
@@ -115,8 +143,8 @@
 
 <script>
 import {ref} from "vue";
-import {deleteMsg, getAll} from "../../http/modules/roleManagement";
 import {reactive} from 'vue'
+import {ElMessage} from 'element-plus'
 
 
 const form = reactive({
@@ -131,18 +159,8 @@ const value1 = ref([])
 let newId = ref("");
 const addName = ref("");
 const addRole = ref("");
-const checkboxGroup1 = []
 const input = ref("");
-const cities = ['系统管理',
-  '用户管理', '用户查看', '用户新增', '用户修改', '用户删除',
-  '角色管理', '角色查看', '角色新增', '角色修改', '角色删除',
-  '商品管理', '商品查看', '商品新增', '商品修改', '商品删除',
-  '订单管理', '订单查看', '订单新增', '订单修改', '订单删除',
-  '套餐管理', '套餐查看', '套餐新增', '套餐修改', '套餐删除',
-  '接口文档', '文档查看']
-
-
-
+const arrayAuthority = ref([])
 
 export default {
   name: "RoleManangement",
@@ -154,6 +172,7 @@ export default {
       dialogVisibleDelete: false,
       dialogVisibleUpdate: false,
       dialogVisibleAdd: false,
+      dialogVisibleUpdateAuthority: false,
       addName,
       addRole,
       form,
@@ -163,32 +182,188 @@ export default {
         remark: '',
         name: '',
       },
-      cities,
-      checkboxGroup1,
       input,
       clickButton: false,
       totalCount: 100,
       currentPage: 1,
       pageSize: 10,
-
+      dataAuthority: [{
+        id: 1,
+        label: '系统管理',
+        children: [
+          {
+            id: 6,
+            label: '用户管理',
+            children: [
+              {
+                id: 18,
+                label: '用户查看',
+              },
+              {
+                id: 19,
+                label: '用户新增',
+              },
+              {
+                id: 20,
+                label: '用户修改',
+              },
+              {
+                id: 21,
+                label: '用户删除',
+              },
+            ],
+          }, {
+            id: 7,
+            label: '角色管理',
+            children: [
+              {
+                id: 22,
+                label: '角色查看',
+              },
+              {
+                id: 23,
+                label: '角色新增',
+              },
+              {
+                id: 24,
+                label: '角色修改',
+              },
+              {
+                id: 25,
+                label: '角色删除',
+              },
+            ],
+          },
+        ],
+      },
+        {
+          id: 2,
+          label: '商品管理',
+          children: [
+            {
+              id: 8,
+              label: '单品管理',
+              children: [
+                {
+                  id: 26,
+                  label: '单品查看',
+                },
+                {
+                  id: 27,
+                  label: '单品新增',
+                },
+                {
+                  id: 28,
+                  label: '单品修改',
+                },
+                {
+                  id: 29,
+                  label: '单品删除',
+                },
+              ],
+            },
+            {
+              id: 9,
+              label: '套餐管理',
+              children: [
+                {
+                  id: 30,
+                  label: '套餐查看',
+                },
+                {
+                  id: 31,
+                  label: '套餐新增',
+                },
+                {
+                  id: 32,
+                  label: '套餐修改',
+                },
+                {
+                  id: 33,
+                  label: '套餐删除',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 3,
+          label: '订单管理',
+          children: [
+            {
+              id: 10,
+              label: '订单查看',
+            },
+            {
+              id: 11,
+              label: '订单新增',
+            },
+            {
+              id: 12,
+              label: '订单修改',
+            },
+            {
+              id: 13,
+              label: '订单删除',
+            },
+          ],
+        },
+        {
+          id: 4,
+          label: '顾客管理',
+          children: [
+            {
+              id: 14,
+              label: '顾客查看',
+            },
+            {
+              id: 15,
+              label: '顾客新增',
+            },
+            {
+              id: 16,
+              label: '顾客修改',
+            },
+            {
+              id: 17,
+              label: '顾客删除',
+            },
+          ],
+        },
+        {
+          id: 5,
+          label: '接口文档',
+          children: [
+            {
+              id: 18,
+              label: '文档查看',
+            },
+          ],
+        },],
+      defaultProps: {
+        children: 'children',
+        label: 'label',
+      },
+      arrayAuthority,
     }
   },
+
   mounted() {
     this.getMsg()
     this.definiteMsg()
   },
   methods: {
 
-    definiteMsg(){
-      if (sessionStorage.getItem("username")!=="admin"){
-        this.clickButton=true
+    definiteMsg() {
+      if (sessionStorage.getItem("username") !== "admin") {
+        this.clickButton = true
       }
     },
 
     getMsg() {
       this.$api.roleManagement.getAll(`/role/findAll/${this.currentPage}/${this.pageSize}`).then(res => {
         console.log(res)
-        this.tableData=res.data.rows
+        this.tableData = res.data.rows
         this.totalCount = res.data.totalCount;
 
       })
@@ -204,9 +379,15 @@ export default {
       this.$api.roleManagement.deleteMsg(`/role/deleteMsg/${id}`).then(res => {
 
         if (res.code === 200) {
-          alert(res.msg)
+          ElMessage({
+            message: res.msg,
+            type: 'success',
+          })
         } else {
-          alert(res.msg)
+          ElMessage({
+            message: res.msg,
+            type: 'warning',
+          })
         }
 
         this.getMsg()
@@ -220,9 +401,15 @@ export default {
         "remark": addRole.value,
       }).then(res => {
         if (res.code === 200) {
-          alert(res.msg)
+          ElMessage({
+            message: res.msg,
+            type: 'success',
+          })
         } else {
-          alert(res.msg)
+          ElMessage({
+            message: res.msg,
+            type: 'warning',
+          })
         }
         console.log(res)
         this.cleanMsg()
@@ -233,12 +420,38 @@ export default {
 
       this.newMessage.remark = r
       this.newMessage.name = n
+      let array1 = []
+      let array2 = []
       this.$api.roleManagement.getAll(`/role/getNewMsg/${i}`).then(res => {
-        console.log(res)
+        console.log(this.arrayAuthority)
+
         for (let j = 0; j < res.data.length; j++) {
-          this.checkboxGroup1.push(res.data[j].name)
+          array1.push(res.data[j].name)
         }
-        console.log(this.checkboxGroup1)
+        console.log(array1)
+
+        for (let t = 0; t < this.dataAuthority.length; t++) {
+          for (let y = 0; y < array1.length; y++) {
+            if (this.dataAuthority[t].label === array1[y]) {
+              array2.push(this.dataAuthority[t].id)
+            } else {
+              for (let u = 0; u < this.dataAuthority[t].children.length; u++) {
+                if (this.dataAuthority[t].children[u].label === array1[y]) {
+                  array2.push(this.dataAuthority[t].children[u].id)
+                } else if (this.dataAuthority[t].children[u].children) {
+                  for (let o = 0; o < this.dataAuthority[t].children[u].children.length; o++) {
+                    if (this.dataAuthority[t].children[u].children[o].label === array1[y]) {
+                      array2.push(this.dataAuthority[t].children[u].children[o].id)
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        this.arrayAuthority = array2
+        console.log(this.arrayAuthority)
+
       })
 
       updateId = i
@@ -253,22 +466,54 @@ export default {
         "id": updateId
       }).then(res => {
         if (res.code === 200) {
-          alert("修改成功")
+          ElMessage({
+            message: '修改成功',
+            type: 'success',
+          })
         } else {
-          alert("修改失败")
+          ElMessage({
+            message: '修改失败',
+            type: 'warning',
+          })
         }
         console.log(res)
 
         this.getMsg()
       })
-      this.$api.roleManagement.addMessage(`/role/updateRoleMenu/${updateId}`, this.checkboxGroup1).then(res => {
 
+
+
+    },
+    updateAuthority(){
+      /*this.$api.roleManagement.addMessage(`/role/updateRoleMenu/${updateId}`, this.arrayAuthority).then(res => {
+        console.log(res)
+        this.cleanMsg()
+        this.getMsg()
+      })*/
+      var checkedNodes = this.$refs.tree.getCheckedNodes();
+      let array3 = []
+      for (let i = 0; i < checkedNodes.length; i++) {
+        if (checkedNodes[i].label){
+          array3.push(checkedNodes[i].label)
+        }
+      }
+      /*alert(array3)*/
+
+      this.$api.roleManagement.addMessage(`/role/updateRoleMenu/${updateId}`, array3).then(res => {
+        if (res.code === 200) {
+          ElMessage({
+            message: '修改成功',
+            type: 'success',
+          })
+        } else {
+          ElMessage({
+            message: '修改失败',
+            type: 'warning',
+          })
+        }
         this.cleanMsg()
         this.getMsg()
       })
-
-
-      console.log(this.checkboxGroup1)
 
     },
 
@@ -300,9 +545,12 @@ export default {
     },
 
     cleanMsg() {
-      this.checkboxGroup1 = []
+      this.arrayAuthority = []
       addName.value = null
       addRole.value = null
+      this.$nextTick(()=>{
+        this.$refs.tree.setCheckedKeys(this.arrayAuthority)
+      })
     }
 
 
