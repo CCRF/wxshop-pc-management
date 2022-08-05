@@ -620,7 +620,5 @@ export default {
 </script>
 
 <style scoped>
-.dialogStyle {
-  width: 100%;
-}
+
 </style>
