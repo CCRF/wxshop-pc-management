@@ -16,3 +16,7 @@ export function addMeal(url,params){
 export function findById(url,params){
     return get(url,params)
 }
+
+export function getAllGoods(url,params){
+    return get(url,params)
+}
