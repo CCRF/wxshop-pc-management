@@ -21,8 +21,8 @@
       <div class="queryInput no">
         <el-input type="text" v-model="queryData" @clear="getAll" placeholder="请输入查询关键字" clearable></el-input>
       </div>
-      <el-button type="primary" @click="select">查询商品</el-button>
-      <el-button type="primary" @click="insert">新增商品</el-button>
+      <el-button type="primary" @click="selectGoods">查询商品</el-button>
+      <el-button type="primary" @click="insertGoods">新增商品</el-button>
       <el-button type="success" @click="insertType">商品类型管理</el-button>
     </div>
     <div class="main">
@@ -46,8 +46,8 @@
         <el-table-column prop="remark" label="商品描述" width="260" />
         <el-table-column label="操作">
           <template #default="scope">
-            <el-button type="info" @click="update">编辑</el-button>
-            <el-button type="danger" @click="delect">删除</el-button>
+            <el-button type="info" @click="updateGoods">编辑</el-button>
+            <el-button type="danger" @click="deleteGoods(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -175,7 +175,7 @@ export default {
           )
         }
       },
-      select() {
+      selectGoods() {
         this.$api.goods.findGoods("/goods/selectGoodsByMsg", {msg: this.queryData}).then(res => {
               // console.log(res)
               this.goodsList = res.data
@@ -185,6 +185,19 @@ export default {
               console.log(err)
             }
         )
+      },
+      deleteGoods(row) {
+        // console.log(row.id);
+        // 确认提示...................................
+        // this.$api.goods.modifyGoods("/goods/deleteGoods", row.id).then(res => {
+        //       console.log(row.id, "删除成功", res)
+        //     }, err => {
+        //       console.log("获取失败")
+        //       console.log(err)
+        //     }
+        // )
+        this.$router.go(0)
+        // 成功提示....................................
       }
     }
 }
@@ -210,6 +223,6 @@ export default {
   }
   .fenye {
     margin-top: 5px;
-    margin-left: 35%;
+    margin-left: 32%;
   }
 </style>
