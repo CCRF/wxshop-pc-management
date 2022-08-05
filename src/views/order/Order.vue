@@ -383,7 +383,8 @@
   }
 
   :deep(.too-old td) {
-    background-color: #e3929a !important;
+    border: 1px solid #fc0017 !important;
+    border-radius: 7px;
     animation: fade 1200ms;
   }
 
@@ -398,6 +399,7 @@
 
   @keyframes fade {
     from {
+
       opacity: 1.0;
     }
     50% {
