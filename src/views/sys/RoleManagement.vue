@@ -1,7 +1,7 @@
 <template>
   <el-input v-model="input" placeholder="搜索" style="width: 70%"/>
   <el-button type="success" plain @click="search()" :disabled="clickButton">查询</el-button>
-  <el-button type="warning" :disabled="clickButton" plain @click="dialogVisibleAdd = true">新增</el-button>
+  <el-button type="warning" :disabled="clickAddButton" plain @click="dialogVisibleAdd = true">新增</el-button>
   <el-dialog
       title="新增"
       :plain="true"
@@ -42,7 +42,7 @@
     <el-table-column fixed="right" label="选择" width="180">
 
       <template #default="scope">
-        <el-button link type="primary" :plain="true" size="small" :disabled="clickButton"
+        <el-button link type="primary" :plain="true" size="small" :disabled="clickAuthorityButton"
                    @click="getNewMsg(scope.row.remark,scope.row.name,scope.row.id);dialogVisibleUpdateAuthority=true"
         >权限
         </el-button
@@ -73,7 +73,7 @@
       </span>
           </template>
         </el-dialog>
-        <el-button link type="primary" :plain="true" size="small" :disabled="clickButton"
+        <el-button link type="primary" :plain="true" size="small" :disabled="clickUpdateButton"
                    @click="getNewMsg(scope.row.remark,scope.row.name,scope.row.id);dialogVisibleUpdate=true"
         >修改信息
         </el-button
@@ -108,7 +108,7 @@
       </span>
           </template>
         </el-dialog>
-        <el-button link type="primary" :plain="true" size="small" :disabled="clickButton"
+        <el-button link type="primary" :plain="true" size="small" :disabled="clickDeleteButton"
                    @click="getId(scope.row.id);dialogVisibleDelete = true">
           删除
         </el-button>
@@ -183,7 +183,11 @@ export default {
         name: '',
       },
       input,
-      clickButton: false,
+      clickAddButton: true,
+      clickAuthorityButton: true,
+      clickDeleteButton: true,
+      clickUpdateButton: true,
+      clickButton: true,
       totalCount: 100,
       currentPage: 1,
       pageSize: 10,
@@ -355,8 +359,37 @@ export default {
   methods: {
 
     definiteMsg() {
-      if (sessionStorage.getItem("username") !== "admin") {
-        this.clickButton = true
+
+      if (sessionStorage.getItem("username")) {
+        let name = sessionStorage.getItem("username")
+
+        if (sessionStorage.getItem("username")==="admin"){
+          this.clickButton = false
+          this.clickAddButton = false
+          this.clickUpdateButton = false
+          this.clickAuthorityButton = false
+          this.clickDeleteButton = false
+        }else {
+          this.$api.roleManagement.getAll(`/role/getNewMsgByName/${name}`).then(res => {
+
+            for (let j = 0; j < res.data.length; j++) {
+              if (res.data[j].name === "角色查看") {
+                this.clickButton = false
+              } else if (res.data[j].name === "角色新增") {
+                this.clickAddButton = false
+              } else if (res.data[j].name === "角色修改") {
+                this.clickUpdateButton = false
+                this.clickAuthorityButton = false
+              } else if (res.data[j].name === "角色删除") {
+                this.clickDeleteButton = false
+              }
+              console.log(res.data[j].name)
+            }
+
+
+          })
+        }
+
       }
     },
 
@@ -482,9 +515,8 @@ export default {
       })
 
 
-
     },
-    updateAuthority(){
+    updateAuthority() {
       /*this.$api.roleManagement.addMessage(`/role/updateRoleMenu/${updateId}`, this.arrayAuthority).then(res => {
         console.log(res)
         this.cleanMsg()
@@ -493,7 +525,7 @@ export default {
       var checkedNodes = this.$refs.tree.getCheckedNodes();
       let array3 = []
       for (let i = 0; i < checkedNodes.length; i++) {
-        if (checkedNodes[i].label){
+        if (checkedNodes[i].label) {
           array3.push(checkedNodes[i].label)
         }
       }
@@ -548,7 +580,7 @@ export default {
       this.arrayAuthority = []
       addName.value = null
       addRole.value = null
-      this.$nextTick(()=>{
+      this.$nextTick(() => {
         this.$refs.tree.setCheckedKeys(this.arrayAuthority)
       })
     }
