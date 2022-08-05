@@ -5,6 +5,7 @@ import RoleManagement from "@/views/sys/RoleManagement.vue";
 import Goods from "@/views/goods/Goods.vue";
 import Order from "@/views/order/Order.vue";
 import SetMeal from "@/views/setmeal/SetMeal.vue";
+import MenuManagement from "../views/sys/MenuManagement";
 import {createRouter, createWebHistory} from "vue-router";
 
 // 创建路由表
@@ -28,6 +29,11 @@ const routes = [
                 path: "role",
                 name: "RoleManagement",
                 component: RoleManagement,
+            },
+            {
+                path: "menu",
+                name: "MenuManagement",
+                component: MenuManagement,
             },
             {
                 path: "goods",
