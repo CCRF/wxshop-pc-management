@@ -200,171 +200,21 @@ export default {
       totalCount: 100,
       currentPage: 1,
       pageSize: 10,
-      dataAuthority: [{
-        id: 1,
-        label: '系统管理',
-        children: [
-          {
-            id: 6,
-            label: '用户管理',
-            children: [
-              {
-                id: 18,
-                label: '用户查看',
-              },
-              {
-                id: 19,
-                label: '用户新增',
-              },
-              {
-                id: 20,
-                label: '用户修改',
-              },
-              {
-                id: 21,
-                label: '用户删除',
-              },
-            ],
-          }, {
-            id: 7,
-            label: '角色管理',
-            children: [
-              {
-                id: 22,
-                label: '角色查看',
-              },
-              {
-                id: 23,
-                label: '角色新增',
-              },
-              {
-                id: 24,
-                label: '角色修改',
-              },
-              {
-                id: 25,
-                label: '角色删除',
-              },
-            ],
-          },
-        ],
-      },
-        {
-          id: 2,
-          label: '商品管理',
-          children: [
-            {
-              id: 8,
-              label: '单品管理',
-              children: [
-                {
-                  id: 26,
-                  label: '单品查看',
-                },
-                {
-                  id: 27,
-                  label: '单品新增',
-                },
-                {
-                  id: 28,
-                  label: '单品修改',
-                },
-                {
-                  id: 29,
-                  label: '单品删除',
-                },
-              ],
-            },
-            {
-              id: 9,
-              label: '套餐管理',
-              children: [
-                {
-                  id: 30,
-                  label: '套餐查看',
-                },
-                {
-                  id: 31,
-                  label: '套餐新增',
-                },
-                {
-                  id: 32,
-                  label: '套餐修改',
-                },
-                {
-                  id: 33,
-                  label: '套餐删除',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: 3,
-          label: '订单管理',
-          children: [
-            {
-              id: 10,
-              label: '订单查看',
-            },
-            {
-              id: 11,
-              label: '订单新增',
-            },
-            {
-              id: 12,
-              label: '订单修改',
-            },
-            {
-              id: 13,
-              label: '订单删除',
-            },
-          ],
-        },
-        {
-          id: 4,
-          label: '顾客管理',
-          children: [
-            {
-              id: 14,
-              label: '顾客查看',
-            },
-            {
-              id: 15,
-              label: '顾客新增',
-            },
-            {
-              id: 16,
-              label: '顾客修改',
-            },
-            {
-              id: 17,
-              label: '顾客删除',
-            },
-          ],
-        },
-        {
-          id: 5,
-          label: '接口文档',
-          children: [
-            {
-              id: 18,
-              label: '文档查看',
-            },
-          ],
-        },],
+      dataAuthority: [],
       defaultProps: {
         children: 'children',
-        label: 'label',
+        label: 'name',
       },
       arrayAuthority,
+      deleteArray: []
     }
   },
 
   mounted() {
     this.getMsg()
     this.definiteMsg()
-  },
+  }
+  ,
   methods: {
 
     definiteMsg() {
@@ -392,7 +242,6 @@ export default {
               } else if (res.data[j].name === "角色删除") {
                 this.clickDeleteButton = false
               }
-              console.log(res.data[j].name)
             }
 
 
@@ -400,7 +249,8 @@ export default {
         }
 
       }
-    },
+    }
+    ,
 
     getMsg() {
       this.$api.roleManagement.getAll(`/role/findAll/${this.currentPage}/${this.pageSize}`).then(res => {
@@ -418,19 +268,22 @@ export default {
         this.totalCount = res.data.totalCount;
 
       })
-    },
+    }
+    ,
     dateFormat(dateStr) {
       const dt = new Date(dateStr);
       const y = dt.getFullYear()
       const m = dt.getMonth() + 1
       const d = dt.getDate()
       return `${y}-${m}-${d}`
-    },
+    }
+    ,
     getId(id) {
       newId = id;
 
       return newId;
-    },
+    }
+    ,
     deleteMessage(id) {
       id = newId
       console.log(id)
@@ -452,7 +305,8 @@ export default {
         console.log(res)
       })
 
-    },
+    }
+    ,
     addMsg() {
       this.$api.roleManagement.addMessage('/role/addMsg', {
         "name": addName.value,
@@ -473,7 +327,8 @@ export default {
         this.cleanMsg()
         this.getMsg()
       })
-    },
+    }
+    ,
     getNewMsg(r, n, i) {
 
 
@@ -481,42 +336,136 @@ export default {
       this.newMessage.name = n
       let array1 = []
       let array2 = []
-      this.$api.roleManagement.getAll(`/role/getNewMsg/${i}`).then(res => {
-        console.log(this.arrayAuthority)
+      let array5 = []
 
-        for (let j = 0; j < res.data.length; j++) {
-          array1.push(res.data[j].name)
-        }
-        console.log(array1)
 
-        for (let t = 0; t < this.dataAuthority.length; t++) {
-          for (let y = 0; y < array1.length; y++) {
-            if (this.dataAuthority[t].label === array1[y]) {
-              array2.push(this.dataAuthority[t].id)
-            } else {
-              for (let u = 0; u < this.dataAuthority[t].children.length; u++) {
-                if (this.dataAuthority[t].children[u].label === array1[y]) {
-                  array2.push(this.dataAuthority[t].children[u].id)
-                } else if (this.dataAuthority[t].children[u].children) {
-                  for (let o = 0; o < this.dataAuthority[t].children[u].children.length; o++) {
-                    if (this.dataAuthority[t].children[u].children[o].label === array1[y]) {
-                      array2.push(this.dataAuthority[t].children[u].children[o].id)
+      this.$api.menu.findNavTree("/menu/findAllNavTree", {"userName": "admin"})
+          .then(res => {
+            console.log("权限有：", res.data)
+            let allPermission = []
+            let allPermission1 = []
+            for (let j = 0; j < res.data.length; j++) {
+              let copylist = {
+                children: '',
+                id: '',
+                name: ''
+              }
+              let copylist1 = {
+                name: '',
+                parentName: ''
+              }
+              allPermission.push(res.data[j].name)
+              copylist.children = res.data[j].children
+              copylist.id = res.data[j].id
+              copylist.name = res.data[j].name
+              copylist1.name = res.data[j].name
+              copylist1.parentName = res.data[j].parentName
+              allPermission1.push(copylist1)
+              if (res.data[j].children) {
+                for (let k = 0; k < res.data[j].children.length; k++) {
+                  let copylist1 = {
+                    name: '',
+                    parentName: ''
+                  }
+                  allPermission.push(res.data[j].children[k].name)
+                  copylist1.name = res.data[j].children[k].name
+                  copylist1.parentName = res.data[j].children[k].parentName
+                  allPermission1.push(copylist1)
+                  if (res.data[j].children[k].children) {
+
+                    for (let p = 0; p < res.data[j].children[k].children.length; p++) {
+                      let copylist1 = {
+                        name: '',
+                        parentName: ''
+                      }
+                      allPermission.push(res.data[j].children[k].children[p].name)
+                      copylist1.name = res.data[j].children[k].children[p].name
+                      copylist1.parentName = res.data[j].children[k].children[p].parentName
+                      allPermission1.push(copylist1)
+                    }
+                  }
+                }
+
+              }
+              array5.push(copylist)
+            }
+            console.log("这就是", allPermission1)
+            this.dataAuthority = array5
+            console.log(this.dataAuthority)
+            this.$api.roleManagement.getAll(`/role/getNewMsg/${i}`).then(res => {
+
+              for (let j = 0; j < res.data.length; j++) {
+                array1.push(res.data[j].name)
+              }
+              let a = new Set(allPermission)
+              let b = new Set(array1)
+
+              let difference = new Set([...a].filter(x => !b.has(x)))
+
+              let c = Array.from(difference)
+
+              console.log("array1", c)
+
+              let deleteName = []
+
+              for (let k = 0; k < allPermission1.length; k++) {
+                for (let q = 0; q < c.length; q++) {
+                  if (c[q] === allPermission1[k].name) {
+                    deleteName.push(allPermission1[k].parentName)
+                    for (let w = 0; w < allPermission1.length; w++) {
+                      if (allPermission1[k].parentName === allPermission1[w].name) {
+                        if (allPermission1[w].parentName !== null) {
+                          deleteName.push(allPermission1[w].parentName)
+                        }
+                      }
                     }
                   }
                 }
               }
-            }
-          }
-        }
-        this.arrayAuthority = array2
-        console.log(this.arrayAuthority)
 
-      })
+              let getNew = Array.from(new Set(deleteName))
+
+              console.log("deleteName", getNew)
+
+              for (let m = 0; m < getNew.length; m++) {
+                let index = array1.indexOf(getNew[m])
+                array1.splice(index,1)
+              }
+
+              console.log("最终",array1)
+
+              for (let t = 0; t < this.dataAuthority.length; t++) {
+                for (let y = 0; y < array1.length; y++) {
+                  if (this.dataAuthority[t].name === array1[y]) {
+                    array2.push(this.dataAuthority[t].id)
+                  } else {
+                    for (let u = 0; u < this.dataAuthority[t].children.length; u++) {
+                      if (this.dataAuthority[t].children[u].name === array1[y]) {
+                        array2.push(this.dataAuthority[t].children[u].id)
+                      } else if (this.dataAuthority[t].children[u].children) {
+                        for (let o = 0; o < this.dataAuthority[t].children[u].children.length; o++) {
+                          if (this.dataAuthority[t].children[u].children[o].name === array1[y]) {
+                            array2.push(this.dataAuthority[t].children[u].children[o].id)
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              console.log("获得的权限", array2)
+              this.arrayAuthority = array2
+              this.deleteArray = []
+              console.log("拥有的权", this.arrayAuthority)
+            })
+          })
+
 
       updateId = i
       console.log(r, n)
       return updateId
-    },
+    }
+    ,
     updateMsg() {
 
       this.$api.roleManagement.addMessage('/role/updateName', {
@@ -541,7 +490,8 @@ export default {
       })
 
 
-    },
+    }
+    ,
     updateAuthority() {
       /*this.$api.roleManagement.addMessage(`/role/updateRoleMenu/${updateId}`, this.arrayAuthority).then(res => {
         console.log(res)
@@ -551,14 +501,21 @@ export default {
 
       var checkedNodes = this.$refs.tree.getCheckedNodes();
       let array3 = []
+
       for (let i = 0; i < checkedNodes.length; i++) {
-        if (checkedNodes[i].label) {
-          array3.push(checkedNodes[i].label)
+        if (checkedNodes[i].name) {
+          array3.push(checkedNodes[i].name)
+
+        }
+        if (checkedNodes[i].parentName) {
+          array3.push(checkedNodes[i].parentName)
         }
       }
-      /*alert(array3)*/
+      console.log(checkedNodes)
+      let array6 = [...new Set(array3)]
 
-      this.$api.roleManagement.addMessage(`/role/updateRoleMenu/${updateId}`, array3).then(res => {
+
+      this.$api.roleManagement.addMessage(`/role/updateRoleMenu/${updateId}`, array6).then(res => {
         if (res.code === 200) {
           ElMessage({
             message: '修改成功',
@@ -574,7 +531,8 @@ export default {
         this.getMsg()
       })
 
-    },
+    }
+    ,
 
     search() {
 
@@ -592,16 +550,19 @@ export default {
         this.getMsg()
       }
 
-    },
+    }
+    ,
 
     handleSizeChange(val) {
       this.pageSize = val;
       this.getMsg();
-    },
+    }
+    ,
     handleCurrentChange(val) {
       this.currentPage = val;
       this.getMsg();
-    },
+    }
+    ,
 
     cleanMsg() {
       this.arrayAuthority = []
@@ -613,7 +574,8 @@ export default {
     }
 
 
-  },
+  }
+  ,
 
 
 }
