@@ -79,7 +79,10 @@
                         })
 
                     //4、获取用户权限
-
+                    // this.$api.user.findPermissions("/user/findPermissions", {'name': this.loginForm.username})
+                    //   .then(res => {
+                    //     this.$store.commit('setPerms',res);
+                    // })
 
                     //5、跳转到index.vue
                     this.$router.push("/index");

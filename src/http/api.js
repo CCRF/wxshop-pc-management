@@ -5,6 +5,7 @@ import * as roleManagement from "@/http/modules/roleManagement";
 import * as SetMeal from "@/http/modules/SetMeal";
 import * as goods from "@/http/modules/goods"
 import * as user from "@/http/modules/user";
+import * as customer from "@/http/modules/customer";
 
 export default {
     login,
@@ -13,5 +14,6 @@ export default {
     roleManagement,
     SetMeal,
     goods,
-    user
+    user,
+    customer
 }
