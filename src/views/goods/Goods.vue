@@ -1,27 +1,27 @@
 <template>
   <div>
     <div class="topItem">
-      <el-select v-model="saleData" @change="choBS" @clear="getAll" placeholder="按可售状态筛选商品" class="selBox" clearable>
+      <el-select v-model="saleData" @change="choAll" placeholder="按可售状态筛选商品" class="selBox" clearable>
         <el-option v-for="item in saleOptions"
                    :key="item.value"
                    :label="item.label"
                    :value="item.value"></el-option>
       </el-select>
-      <el-select v-model="typeData" @change="choBT" @clear="getAll" placeholder="按类型筛选商品" class="selBox" clearable>
+      <el-select v-model="typeData" @change="choAll" placeholder="按类型筛选商品" class="selBox" clearable>
         <el-option v-for="item in typeOptions"
                    :key="item.id"
                    :label="item.name"
-                   :value="item.name"></el-option>
+                   :value="item.id"></el-option>
       </el-select>
       <div class="selBox no">
         <el-input type="number" v-model="priceData" placeholder="按价格范围筛选商品"
-                  min="0" max="200" @blur="shuzi" @clear="getAll" clearable
+                  min="0" max="200" @blur="shuzi" @clear="choAll" clearable
                   :title="'筛选单价￥'+priceData+'以内的商品'"></el-input>
       </div>
       <div class="queryInput no">
-        <el-input type="text" v-model="queryData" @clear="getAll" placeholder="请输入查询关键字" clearable></el-input>
+        <el-input type="text" v-model="queryData" @clear="choAll" placeholder="请输入查询关键字" clearable></el-input>
       </div>
-      <el-button type="primary" @click="selectGoods">查询商品</el-button>
+      <el-button type="primary" @click="choAll">查询商品</el-button>
       <el-button type="primary" @click="insertGoods">新增商品</el-button>
       <el-button type="success" @click="insertType">商品类型管理</el-button>
     </div>
@@ -40,7 +40,7 @@
         <el-table-column prop="isSale" label="是否可销售" :formatter="isMarketable" width="95" />
         <el-table-column label="商品图" width="110" >
           <template v-slot="scope">
-            <el-image :src="scope.row.picture"></el-image>
+            <el-image :src="'http://localhost:8090/images/'+scope.row.picture"></el-image>
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="商品描述" width="260" />
@@ -81,6 +81,7 @@ export default {
         },
         saleData: '',
         saleOptions: [
+          {label: '所有状态', value: '-1'},
           {label: '可以销售', value: '1'},
           {label: '不可销售', value: '0'}
         ],
@@ -96,6 +97,7 @@ export default {
         this.$api.goods.findGoods("/goods/findAllGoods").then(res => {
               console.log("获取成功")
               this.goodsList = res.data
+              // this.goodsList[i].picture = 1
               this.pageInfo.total = res.data.length
               console.log("返回的数据为：", res)
             }, err => {
@@ -108,6 +110,8 @@ export default {
         this.$api.goods.findGoods("/goods/findAllType").then(res => {
               // console.log("获取类型成功", res)
               this.typeOptions = res.data;
+              // unshift从头部插入数据
+              this.typeOptions.unshift({id: -1, name:'所有类型'})
               // this.typeOptions.label = res.data.name
               // this.typeOptions.value = res.data.id
               // console.log(this.typeOptions);
@@ -123,31 +127,27 @@ export default {
       handleCurrentChange(val) {
         this.pageInfo.currentPage = val
       },
-      choBS() {
-        if (this.saleData != '') {
-          this.$api.goods.findGoods("/goods/selectGoodsByIsSale", {isSale: this.saleData}).then(res => {
-                // console.log("获取成功")
-                this.goodsList = res.data
-                this.pageInfo.total = res.data.length
-                console.log("返回的数据为：", res)
-              }, err => {
-                console.log("获取失败")
-                console.log(err)
-              }
-          )
+      choAll() {
+        let sd = this.saleData;
+        let td = this.typeData;
+        if (sd == -1) {
+          sd = "";
         }
-      },
-      choBT() {
-        if (this.typeData != '') {
-          this.$api.goods.findGoods("/goods/selectGoodsByType", {typeName: this.typeData}).then(res => {
-                // console.log("通过类型获取商品", res)
-                this.goodsList = res.data
-                this.pageInfo.total = res.data.length
-              }, err => {
-                console.log("获取失败")
-                console.log(err)
-              }
-          )}
+        if (td == -1) {
+          td = "";
+        }
+        this.$api.goods.findGoods("/goods/selectGoodsByAllMsg",
+            {isSale: sd, typeId: td, price: this.priceData, msg: this.queryData})
+            .then(res => {
+              console.log(this.saleData,'@',this.typeData,'@',this.priceData,'@',this.queryData)
+              console.log("通过All获取商品", res)
+              this.goodsList = res.data
+              this.pageInfo.total = res.data.length
+            }, err => {
+              console.log("获取失败")
+              console.log(err)
+            }
+        )
       },
       shuzi(e) {
         let t = this.priceData;
@@ -164,27 +164,8 @@ export default {
           e.target.value = 200;
         }
         else if (this.priceData != '') {
-          this.$api.goods.findGoods("/goods/selectGoodsByPrice", {price: this.priceData}).then(res => {
-                // console.log(res)
-                this.goodsList = res.data
-                this.pageInfo.total = res.data.length
-              }, err => {
-                console.log("获取失败")
-                console.log(err)
-              }
-          )
+          this.choAll()
         }
-      },
-      selectGoods() {
-        this.$api.goods.findGoods("/goods/selectGoodsByMsg", {msg: this.queryData}).then(res => {
-              // console.log(res)
-              this.goodsList = res.data
-              this.pageInfo.total = res.data.length
-            }, err => {
-              console.log("获取失败")
-              console.log(err)
-            }
-        )
       },
       deleteGoods(row) {
         // console.log(row.id);
