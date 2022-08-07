@@ -13,11 +13,15 @@
                    :label="item.name"
                    :value="item.id"></el-option>
       </el-select>
-      <div class="selBox no mr">
-        <el-input type="number" v-model="priceData" placeholder="按价格范围筛选商品"
-                  :min=priceLimit.min :max=priceLimit.max
-                  @blur="shuzi($event, priceData)" @clear="choAll" clearable
-                  :title="'筛选单价￥'+priceData+'以内的商品'"></el-input>
+      <div class="no mr">
+<!--        <el-input type="number" v-model="priceData" placeholder="按价格范围筛选商品"-->
+<!--                  :min=priceLimit.min :max=priceLimit.max-->
+<!--                  @blur="shuzi($event, priceData)" @clear="choAll" clearable-->
+<!--                  :title="'筛选单价￥'+priceData+'以内的商品'"></el-input>-->
+        <el-input-number v-model="priceData" placeholder="按价格筛选商品" controls-position="right"
+                         :min=priceLimit.min :max=priceLimit.max :precision="2"
+                         class="fll" style="width: 170px;" @blur="choAll" @click="priceData=''"
+                         :title="'筛选单价￥'+priceData+'以内的商品'"></el-input-number>
       </div>
       <div class="queryInput no mr">
         <el-input type="text" v-model="queryData" @clear="choAll" placeholder="请输入查询关键字" clearable></el-input>
@@ -68,13 +72,13 @@
           </el-select>
         </el-form-item>
         <el-form-item label="商品名称：" prop="name">
-          <el-input v-model="this.insertData.name" type="text" clearable/>
+          <el-input v-model="this.insertData.name" type="text" placeholder="请输入商品名称" clearable/>
         </el-form-item>
         <el-form-item label="商品价格：" prop="price">
 <!--          <el-input v-model="this.insertData.price" type="number"-->
 <!--                    :min=priceLimit.min :max=priceLimit.max-->
 <!--                    @blur="shuzi($event, this.insertData.price)" clearable/>-->
-          <el-input-number v-model="this.insertData.price" :precision="2" class="fll"
+          <el-input-number v-model="this.insertData.price" :precision="2" class="fll" placeholder="￥"
                            :min=priceLimit.min :max=priceLimit.max></el-input-number>
         </el-form-item>
         <el-form-item label="是否可销售：">
@@ -112,14 +116,14 @@
           </el-select>
         </el-form-item>
         <el-form-item label="商品名称：" prop="name">
-          <el-input v-model="this.updateData.name" type="text" clearable/>
+          <el-input v-model="this.updateData.name" type="text" placeholder="请输入商品名称" clearable/>
         </el-form-item>
         <el-form-item label="商品价格：" prop="price">
 <!--          <el-input v-model="this.updateData.price" type="number" prefix-icon="prefix-icon" @input="formatNum(this.updateData.price)">-->
 <!--                    :min=priceLimit.min :max=priceLimit.max-->
 <!--                    @blur="shuzi($event, this.updateData.price)" clearable>-->
 <!--          </el-input>-->
-          <el-input-number v-model="this.updateData.price" :precision="2" class="fll"
+          <el-input-number v-model="this.updateData.price" :precision="2" class="fll" placeholder="￥"
                            :min=priceLimit.min :max=priceLimit.max></el-input-number>
         </el-form-item>
         <el-form-item label="是否可销售：">
@@ -128,13 +132,13 @@
             <el-radio v-model="this.updateData.isSale" :label="0" type="number">否</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="商品图：">
-          <el-input v-model="this.updateData.picture" type="file" clearable/>
-          <!--          v-model储存文件路径-->
-        </el-form-item>
+<!--        图片暂不能修改-->
+<!--        <el-form-item label="商品图：">-->
+<!--          <el-input v-model="this.updateData.picture" type="file" clearable/>-->
+<!--          &lt;!&ndash;          v-model储存文件路径&ndash;&gt;-->
+<!--        </el-form-item>-->
         <el-form-item label="商品描述：">
-<!--          <textarea v-model="this.updateData.remark" rows="3" cols="5" class="el-textarea__inner" style="resize:none"></textarea>-->
-          <el-input v-model="this.updateData.remark" type="textarea" rows="3" resize="none" @input="change"/>
+          <el-input v-model="this.updateData.remark" type="textarea" rows="3" resize="none"/>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click='updateGoods' class="ml">保存</el-button>
@@ -143,7 +147,6 @@
         </el-form-item>
       </el-form>
     </el-dialog>
-
   </div>
   <el-pagination
       background
@@ -183,7 +186,7 @@ export default {
         typeData: '',
         typeOptions: [
         ],
-        priceData: '',
+        priceData: undefined,
         queryData: '',
         rules: {
           type: [
@@ -194,7 +197,8 @@ export default {
           ],
           price: [
             // {required: false, message: '请输入价格', trigger: 'blur'},
-            {min: 0, max: 200, message: '允许输入的价格范围在￥0至￥200以内', trigger: 'blur'}
+            {min: 0, max: 200, message: '允许输入的价格范围在￥0至￥200以内', trigger: 'blur',
+              pattern:/^[0-9]*$/}
           ]
         },
         insertVisible: false,
@@ -203,7 +207,7 @@ export default {
           type:"",
           name:"",
           price:"",
-          isSale:"",
+          isSale:1,
           picture:"",
           remark:""
         },
@@ -222,11 +226,10 @@ export default {
     methods: {
       getAll() {
         this.$api.goods.findGoods("/goods/findAllGoods").then(res => {
-              console.log("获取成功")
+              console.log("获取成功", res)
               this.goodsList = res.data
               // this.goodsList[i].picture = 1
               this.pageInfo.total = res.data.length
-              console.log("返回的数据为：", res)
             }, err => {
               console.log("获取失败")
               console.log(err)
@@ -257,16 +260,20 @@ export default {
       choAll() {
         let sd = this.saleData;
         let td = this.typeData;
+        let pd = this.priceData;
         if (sd == -1) {
           sd = "";
         }
         if (td == -1) {
           td = "";
         }
+        if (pd == undefined) {
+          pd = "";
+        }
         this.$api.goods.findGoods("/goods/selectGoodsByAllMsg",
-            {isSale: sd, typeId: td, price: this.priceData, msg: this.queryData})
+            {isSale: sd, typeId: td, price: pd, msg: this.queryData})
             .then(res => {
-              console.log(this.saleData,'@',this.typeData,'@',this.priceData,'@',this.queryData)
+              // console.log(this.saleData,'@',this.typeData,'@',this.priceData,'@',this.queryData)
               console.log("通过All获取商品", res)
               this.goodsList = res.data
               this.pageInfo.total = res.data.length
@@ -276,30 +283,30 @@ export default {
             }
         )
       },
-      shuzi(e, data) {
-        let t = data;
-        if (t.length > 3) {
-          data = t.slice(0, 3);
-          e.target.value = data;
-        }
-        if (t < 0) {
-          data = 0;
-          e.target.value = 0;
-        }
-        else if (t > 200) {
-          data = 200;
-          e.target.value = 200;
-        }
-        else if (data != '') {
-          this.choAll()
-        }
-      },
+      // shuzi(e, data) {
+      //   let t = data;
+      //   if (t.length > 3) {
+      //     data = t.slice(0, 3);
+      //     e.target.value = data;
+      //   }
+      //   if (t < 0) {
+      //     data = 0;
+      //     e.target.value = 0;
+      //   }
+      //   else if (t > 200) {
+      //     data = 200;
+      //     e.target.value = 200;
+      //   }
+      //   else if (data != '') {
+      //     this.choAll()
+      //   }
+      // },
       insertGoods() {
         // console.log(this.insertData)
-        // console.log(this.goodsList.length)
+        // console.log(this.goodsList.pop().id)
         let data = this.insertData
         this.$api.goods.modifyGoods("/goods/insertGoods",
-            {"id": this.goodsList.length+1, "type": data.type, "name": data.name, "price": data.price,
+            {"id": this.goodsList.pop().id+1, "type": data.type, "name": data.name, "price": data.price,
               "isSale": data.isSale, "picture": data.picture, "remark": data.remark}).then(res => {
               console.log("新增商品", res)
             }, err => {
@@ -312,11 +319,10 @@ export default {
         this.$router.go(0)
       },
       update(row) {
-        // 发送请求获取数据，显示在编辑界面
         this.$api.goods.findGoods("/goods/selectGoodsById", {id: row.id}).then(res => {
-              this.updateData = res.data
-              this.updateData.type = res.data.type[0].name
               console.log("编辑获取", res)
+              this.updateData = res.data
+              this.updateData.type = res.data.type[0].id
             }, err => {
               console.log("获取失败")
               console.log(err)
@@ -327,18 +333,31 @@ export default {
       },
       updateGoods() {
         console.log(this.updateData)
+        let ud = this.updateData;
+        this.$api.goods.modifyGoods("/goods/updateGoods",
+            {"id": ud.id, "type": [{"id": ud.type}], "name": ud.name, "price": ud.price,
+             "isSale": ud.isSale, "remark": ud.remark, "picture": ud.picture}).then(res => {
+              console.log("修改成功", res)
+            }, err => {
+              console.log("获取失败")
+              console.log(err)
+            }
+        )
+        this.close()
+        this.updateVisible = false
+        this.$router.go(0)
       },
       deleteGoods(row) {
-        // console.log(typeof row.id);
+        console.log(row.id);
         // 确认提示...................................
-        // this.$api.goods.modifyGoods("/goods/deleteGoods", row.id).then(res => {
-        //       console.log(row.id, "删除成功", res)
-        //     }, err => {
-        //       console.log("获取失败")
-        //       console.log(err)
-        //     }
-        // )
-        // this.$router.go(0)
+        this.$api.goods.modifyGoods("/goods/deleteGoods", row.id).then(res => {
+              console.log(row.id, "删除成功", res)
+            }, err => {
+              console.log("获取失败")
+              console.log(err)
+            }
+        )
+        this.$router.go(0)
         // 成功提示....................................
       },
       close() {
