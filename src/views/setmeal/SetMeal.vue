@@ -2,7 +2,7 @@
   <el-input placeholder="请输入你想要查询的套餐名称" v-model="Mealname"/>&nbsp;
   <el-button @click="selectByName" class="select">点击查询</el-button>
 
-  <el-popover v-model:visible="visible" placement="top" :width="160" v-if="roleFunction">
+  <el-popover v-model:visible="visible" placement="top" :width="160">
     <p>你想要新加一份套餐吗？</p>
     <div style="text-align: right; margin: 0">
       <el-button size="small" text @click="visible = false">取消</el-button>
@@ -38,17 +38,6 @@
       <el-form-item label="口 味">
         <el-input v-model="newList.flavor" />
       </el-form-item>
-      <el-form-item label="套 餐 图 片">
-        <el-select v-model="value" class="m-2" placeholder="Select" size="large">
-          <el-option
-              v-for="item in imageList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-          />
-        </el-select>
-        <el-image style="width: 100px; height: 100px" :src="this.value" fit="cover" v-show="value" alt="图片暂时没有加载出来哦"/>
-      </el-form-item>
       <el-form-item label="套 餐 内 容">
         <el-button type="primary" @click="SecondaryMaskLayer = true">点击与原有商品组合</el-button>
         <el-dialog v-model="SecondaryMaskLayer" title="Tips" width="60%" draggable>
@@ -74,6 +63,32 @@
           <el-button @click="cancel">取消</el-button>
           <el-button type="primary" @click="CommoditySynthesis">提交</el-button>
         </el-dialog>
+      </el-form-item>
+      <el-form-item label="套 餐 图 片">
+        <el-select v-model="value" class="m-2" placeholder="Select" size="large">
+          <el-option
+              v-for="item in imageList"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+          />
+        </el-select>
+        <el-image style="width: 100px; height: 100px" :src="this.value" fit="cover" v-show="value" alt="图片暂时没有加载出来哦"/>
+      </el-form-item>
+      <el-form-item label="点我上传自己的图片">
+          <el-upload
+              action="http://localhost:8090/setMeal/upload"
+              method="post"
+              show-file-list="false"
+              :before-upload="beforeAvatarUpload"
+              :headers="header"
+              name="file"
+              :multiple="false"
+              :on-success="successUpload"
+          >
+            <el-button>点击上传</el-button>
+            <el-image style="width: 100px; height: 100px" :src="this.uploadImage" fit="cover" v-show="false" alt="图片暂时没有加载出来哦"/>
+          </el-upload>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -111,7 +126,7 @@
         <el-input v-model="newList.flavor" />
       </el-form-item>
       <el-form-item label="套 餐 图 片">
-        <el-select v-model="value" class="m-2" placeholder="Select" size="large">
+        <el-select v-model="updateValue" class="m-2" placeholder="Select" size="large" clearable>
           <el-option
               v-for="item in imageList"
               :key="item.value"
@@ -148,7 +163,21 @@
           <el-button type="primary" @click="CommoditySynthesis">确定</el-button>
         </el-dialog>
       </el-form-item>
-
+      <el-form-item label="点我上传自己的图片">
+        <el-upload
+            action="http://localhost:8090/setMeal/upload"
+            method="post"
+            show-file-list="false"
+            :before-upload="beforeAvatarUpload"
+            :headers="header"
+            name="file"
+            :multiple="false"
+            :on-success="successUpload"
+        >
+          <el-button>点击上传</el-button>
+          <el-image style="width: 100px; height: 100px" :src="this.uploadImage" fit="cover" v-show="false" alt="图片暂时没有加载出来哦"/>
+        </el-upload>
+      </el-form-item>
     </el-form>
     <template #footer>
       <span class="dialog-footer">
@@ -173,7 +202,7 @@
     <el-table-column prop="sale" label="月 销 售 量" />
     <el-table-column prop="flavor" label="口 味" />
     <el-table-column prop="contain" label="套 餐 内 容"  show-overflow-tooltip/>
-    <el-table-column align="left" fixed="right" v-if="roleFunction">
+    <el-table-column align="left" fixed="right">
       <template #default="scope">
         <el-button size="small" @click="handleEdit(scope.row)"
         >修改套餐
@@ -220,42 +249,11 @@ export default {
       file:"",
       modeList:[],
       //这些是与图片相关的,选择器（选择套餐图片的样式）
-      value:"",
-      imageList:[
-        {
-          value:"http://localhost:8090/images/setmeal/新奥尔良炭烤鸡腿堡双人餐.png",
-          label:"套餐1"
-        },
-        {
-          value:"http://localhost:8090/images/setmeal/汁汁厚作和牛堡单人餐.png",
-          label:"套餐2"
-        },
-        {
-          value:"http://localhost:8090/images/setmeal/汁汁厚作和牛堡双人餐.png",
-          label:"套餐3"
-        },
-        {
-          value:"http://localhost:8090/images/setmeal/汁汁双层厚作和牛堡单人餐.png",
-          label:"套餐4"
-        },
-        {
-          value: "http://localhost:8090/images/setmeal/田园午餐.png",
-          label: "套餐5"
-        },
-        {
-          value: "http://localhost:8090/images/setmeal/田园热狗单人餐.png",
-          label: "套餐6"
-        },
-        {
-          value: "http://localhost:8090/images/setmeal/老北京鸡肉卷单人餐.png",
-          label: "套餐7"
-        },
-        {
-          value: "http://localhost:8090/images/setmeal/香辣鸡腿堡单人餐.png",
-          label: "套餐8"
-        }
-      ],//套餐图片的选择
-      roleFunction : true,//判断用户是否有权限来显示功能操作
+      value:"",//新增套餐的值
+      updateValue:"",//修改套餐的值
+      uploadImage:"",
+      imageList:[],//套餐图片列表
+      // roleFunction : true,//判断用户是否有权限来显示功能操作
       goods:[],
       goodCount:[],//套餐包含的内容（数组形式)
       countGood:"",//最后上传的套餐内容,用来提交
@@ -264,6 +262,16 @@ export default {
       currentPage:1,
       totalPage:20,
       pageSize: 4,
+
+      uploadImage:"",//上传返回的图片url
+      header:{
+        token:sessionStorage.getItem("token"),
+        // 'Content-Type':'multipart/form-data' //这里不能加这个注释，不然会报错400
+      },
+      clickAddButton: false,
+      clickDeleteButton: false,
+      clickUpdateButton: false,
+      clickButton: false,
     }
   },
   methods:{
@@ -290,10 +298,10 @@ export default {
     //通过id查询到数据回显在更新框中
     handleEdit(row){
       if (confirm("确认要修改吗？")){
+        this.updateVisible = true
         for (let i = 0; i < this.goods.length; i++) {
           this.goods[i].value=0
         }
-        this.updateVisible = true
         console.log(row.id)
         this.$api.SetMeal.findById(`/setMeal/selectById/${row.id}`)
             .then(res=>{
@@ -321,8 +329,10 @@ export default {
         this.$api.SetMeal.deleteById("/setMeal/deleteById",msg.id)
             .then(res=>{
                   console.log("返回的结果为：",res)
-                  this.$message({message:'更新成功',type:'success'})
-                  location.reload()
+              if (res.code==200){
+                this.$message({message:'更新成功',type:'success'})
+                location.reload()
+              }
                 },err=>{
                   console.log(err)
                   this.$message.error('更新失败')
@@ -346,31 +356,39 @@ export default {
         data.price = this.PriceCount
         data.name = this.newList.name
         data.contain = this.countGood
-        // console.log("结合起来的数据为：",data.contain)
         data.flavor = this.newList.flavor
         data.description = this.newList.description
-        console.log(this.value)
-        data.picture = this.value
+        if (this.uploadImage==""){
+          data.picture = this.value
+        }else {
+          data.picture = this.uploadImage
+        }
         this.dialogVisible = false
         this.$api.SetMeal.addMeal("/setMeal/insert",data)
             .then(res=>{
                   console.log(res)
-                  this.$message({message:'提交成功',type:'success'})
-                  location.reload()
+                  if (res.code==200){
+                    this.$message({message:'提交成功',type:'success'})
+                    this.uploadImage==""
+                  }else {
+                    this.$message({message:"提交失败！",type:'error'})
+                    this.uploadImage==""
+                  }
                 },err=>{
                   console.log("发生错误了",err)
-                }
+                },
+                location.reload()
             )
       }
     },
-
     //更新数据
     updateMeal(){
+      this.FindImageList()
       let data = {id:"" ,name: "", price: "", contain: "", description: "", sale: "", flavor: "",picture:""}
       data.id = this.newList.id
       data.sale = this.newList.sale
-      console.log("countGood的值为",this.countGood)
-      if (this.countGood==""){
+      if (this.countGood==null){
+        //判断用户是否上传文件，上传了就使用用户的文件
         data.contain = this.newList.contain
         data.price = this.newList.price
       }else {
@@ -380,40 +398,51 @@ export default {
       data.name = this.newList.name
       data.flavor = this.newList.flavor
       data.description = this.newList.description
-      data.picture = this.value
-      this.dialogVisible = false
+
+      if (this.uploadImage==""){
+        console.log(this.updateValue)
+        data.picture = this.updateValue
+      }else {
+        console.log(this.uploadImage)
+        data.picture = this.uploadImage
+      }
+      this.updateVisible = false
       this.$api.SetMeal.addMeal("/setMeal/update",data)
           .then(res=>{
                 console.log(res)
-            ElMessage({
-
-            })
-                this.$message({message:'更新成功',type:'success'})
-                location.reload()
+            if (res.code==200){
+              this.$message({message:'更新成功',type:'success'})
+            }
+            this.uploadImage = ""
+                // location.reload()
               },err=>{
-                console.log("发生错误了",err)
-              }
+            console.log("发生错误了",err)
+            this.$message({message:"发生错误了，请重试",type:'warning'})
+                this.uploadImage = ""
+          }
           )
+      location.reload()
     },
 
     m1(){
       this.dialogVisible = true
       this.newList=[]
       this.value =""
+      this.uploadImage = ""//让上传的图片路径为空
       console.log(this.goodCount)
       for (let i = 0; i < this.goods.length; i++) {
         this.goods[i].value=0
       }
       this.PriceCount=0
+      console.log("调用方法：FindImageList")
+      this.FindImageList()
+      console.log("成功调用：FindImageList")
     },
 
     changeAction: function (currentValue, oldValue, row) {
-      console.log("row为",row)
       const price = row.price
       const name = row.name
-      console.log(currentValue)
       const m1 = {name,currentValue,price}
-      console.log(m1)
       let array = toRaw(this.goodCount)
       if (currentValue==0){
         for (let i = 0; i < array.length; i++) {
@@ -442,7 +471,6 @@ export default {
         priceCount = priceCount+m2[i].currentValue*m2[i].price
         goodList = goodList+count+"\n"
       }
-      console.log("总价为：",priceCount)
       this.PriceCount = priceCount
       this.countGood = goodList
     },
@@ -464,6 +492,68 @@ export default {
             console.log("返回的数据为11111",res.data)
           })
     },
+    Upload(aa){
+      console.log("此时uploadImag为",this.uploadImage)
+    },
+    //成功上传调用
+    successUpload(response){
+      if (response.code==200){
+        this.uploadImage = response.msg
+          console.log("返回的路径为",this.uploadImage)
+          ElMessage({
+          type:'success',
+          message:"上传成功"
+        })
+
+      }
+    },
+    //文件上传前进行类型、大小检验
+    beforeAvatarUpload(file){
+      console.log("file文件为",file)
+
+      const isJPG = file.type === "image/jpeg";
+      const isJPG2 = file.type === "image/jpg";
+      const isPNG = file.type === "image/png";
+      const isLt5M = file.size / 1024 / 1024 < 5;
+      if (!isJPG && !isJPG2 && !isPNG) {
+        ElMessage({
+          type:"warning",
+          message:"只支持jpg或png格式图片"
+        })
+      }
+      if (!isLt5M) {
+        ElMessage({
+          type:"warning",
+          message:"请上传5MB以内的图片!"
+        })
+      }
+      this.uploadImage = file
+      return (isJPG || isJPG2 || isPNG) && isLt5M;
+    },
+
+    FindImageList(){
+      //拿到图片列表
+      this.$api.SetMeal.FindImages("/setMeal/image")
+          .then(response=>{
+            if (response.code==200){
+              const list = [response.data.length]
+              console.log("lilili",response.data)
+              for (let i = 0; i < response.data.length; i++) {
+                if (response.data[i]==null){
+                  response.data.push(i)
+                }else {
+                  console.log(response.data[i])
+                  list.push({"label":"套餐"+[i],"value":response.data[i]})
+                }
+              }
+              console.log("列表为",list)
+              this.imageList = list
+            }
+          },err=>{
+            console.log("失败了",err)
+          })
+    }
+
   },
   //页面开始时遍历数据
   mounted() {
@@ -472,14 +562,11 @@ export default {
               console.log("挂载返回的数据为：",res)
               this.list = res.data.rows
               this.totalPage = res.data.totalCount
-              let role = sessionStorage.getItem("username")
-              if (role!="admin"){
-                this.roleFunction = false
-              }
             },err=>{
               console.log("获取套餐失败",err)
             }
         );
+
     this.$api.goods.findGoods("/goods/findAllGoods")
         .then(res=>{
           console.log("res为",res)
@@ -489,6 +576,7 @@ export default {
           }
           this.goods = arr
         })
+    this.FindImageList()
   },
 }
 </script>

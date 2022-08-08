@@ -17,6 +17,10 @@ export function findById(url,params){
     return get(url,params)
 }
 
-export function getAllGoods(url,params){
+export function uploadImage(url,params){
+    return post(url,params)
+}
+
+export function FindImages(url,params){
     return get(url,params)
 }
