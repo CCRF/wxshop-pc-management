@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="all">
     <div class="topItem">
       <el-select v-model="saleData" @change="choAll" placeholder="按可售状态筛选商品" class="selBox mr" clearable>
         <el-option v-for="item in saleOptions"
@@ -27,7 +27,8 @@
         <el-input type="text" v-model="queryData" @clear="choAll" placeholder="请输入查询关键字" clearable></el-input>
       </div>
       <el-button type="primary" @click="choAll">查询商品</el-button>
-      <el-button type="primary" @click="this.typeOptions.shift(); this.insertVisible = true">新增商品</el-button>
+      <el-button type="primary"
+                 @click="this.typeOptions.shift();this.insertVisible = true">新增商品</el-button>
       <el-button type="success" @click="insertType">商品类型管理</el-button>
     </div>
     <div class="main">
@@ -48,23 +49,43 @@
             <el-image :src="'https://g1.glypro19.com/img/'+scope.row.picture"></el-image>
           </template>
         </el-table-column>
-        <el-table-column prop="remark" label="商品描述" width="260" />
+        <el-table-column prop="remark" label="商品描述" width="270" />
         <el-table-column label="操作">
           <template #default="scope">
             <el-button type="info" @click="update(scope.row)">编辑</el-button>
-            <el-button type="danger" @click="deleteGoods(scope.row)">删除</el-button>
+<!--            <el-button type="danger" @click="deleteGoods(scope.row)">删除</el-button>-->
+            <el-popconfirm
+                confirm-button-text="确定"
+                cancel-button-text="取消"
+                confirm-button-type="danger"
+                title="确认删除这条商品数据吗？"
+                @confirm="deleteGoods(scope.row)"
+            >
+              <template #reference>
+                <el-button type="danger">删除</el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+          background
+          @current-change="handleCurrentChange"
+          :current-page="pageInfo.currentPage"
+          :page-size="pageInfo.size"
+          layout="prev, pager, next"
+          :total="pageInfo.total"
+          class="fenye" />
     </div>
 
     <el-dialog v-model="insertVisible" title="新增商品" width="500px" @close="close" center>
       <el-form :model="insertData" :rules="rules" label-width="100px" label-position="right">
 <!--        <el-form-item label="编号">-->
-<!--          取当前goodsList长度+1-->
+<!--          取当前goodsList最后一个的编号+1-->
 <!--        </el-form-item>-->
         <el-form-item label="商品类型：" prop="type">
-          <el-select v-model="this.insertData.type" placeholder="请选择商品类型" clearable>
+          <el-select v-model="insertData.type" placeholder="请选择商品类型" clearable @change="getValue"
+                     :disabled="show" title="上传商品图成功后，将不能再选择类型。若想修改类型需要删除上传的商品图后，再进行选择。">
             <el-option v-for="item in typeOptions"
                        :key="item.id"
                        :label="item.name"
@@ -72,31 +93,46 @@
           </el-select>
         </el-form-item>
         <el-form-item label="商品名称：" prop="name">
-          <el-input v-model="this.insertData.name" type="text" placeholder="请输入商品名称" clearable/>
+          <el-input v-model="insertData.name" type="text" placeholder="请输入商品名称" clearable/>
         </el-form-item>
         <el-form-item label="商品价格：" prop="price">
 <!--          <el-input v-model="this.insertData.price" type="number"-->
 <!--                    :min=priceLimit.min :max=priceLimit.max-->
 <!--                    @blur="shuzi($event, this.insertData.price)" clearable/>-->
-          <el-input-number v-model="this.insertData.price" :precision="2" class="fll" placeholder="￥"
+          <el-input-number v-model="insertData.price" :precision="2" class="fll" placeholder="￥"
                            :min=priceLimit.min :max=priceLimit.max></el-input-number>
         </el-form-item>
         <el-form-item label="是否可销售：">
-          <el-radio-group v-model="this.insertData.isSale" type="number">
-            <el-radio v-model="this.insertData.isSale" :label="1">是</el-radio>
-            <el-radio v-model="this.insertData.isSale" :label="0">否</el-radio>
+          <el-radio-group v-model="insertData.isSale" type="number">
+            <el-radio v-model="insertData.isSale" :label="1">是</el-radio>
+            <el-radio v-model="insertData.isSale" :label="0">否</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="商品图：">
-          <el-input v-model="this.insertData.picture" type="file" clearable/>
-<!--          v-model储存文件路径-->
+          <el-upload
+              ref="upload"
+              :class="{dis: uploadDisabled}"
+              :disabled="typeDisabled"
+              action="http://localhost:8090/goods/upload"
+              list-type="picture-card"
+              :before-upload="beforeUpload"
+              :headers="header"
+              @click="getValue"
+              :data="{type: uploadValue}"
+              :on-success="successUpload"
+              :on-change="handleChange"
+              :on-remove="handleRemove">
+            <template #trigger>
+              <el-button type="primary">上传图片</el-button>
+            </template>
+          </el-upload>
         </el-form-item>
         <el-form-item label="商品描述：">
-          <el-input v-model="this.insertData.remark" type="textarea" rows="3" resize="none"/>
+          <el-input v-model="insertData.remark" type="textarea" rows="3" resize="none"/>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click='insertGoods' class="ml">提交</el-button>
-          <el-button type="info" @click='insertData = ""'>重置</el-button>
+          <el-button type="primary" @click='insertGoods;insertData = this.$options.data().insertData' class="ml">提交</el-button>
+          <el-button type="info" @click='insertData = this.$options.data().insertData'>重置</el-button>
           <el-button type="info" @click='close; insertVisible = false'>取消</el-button>
         </el-form-item>
       </el-form>
@@ -105,10 +141,11 @@
     <el-dialog v-model="updateVisible" title="编辑商品信息" width="500px" @close="close" center>
       <el-form :model="updateData" :rules="rules" label-width="100px" label-position="right">
         <el-form-item label="编号：">
-          <el-input v-model="this.updateData.id" type="text" readonly/>
+          <el-input v-model="updateData.id" type="text" readonly/>
         </el-form-item>
         <el-form-item label="商品类型：" prop="type">
-          <el-select v-model="this.updateData.type" placeholder="请选择商品类型" clearable>
+          <el-select v-model="updateData.type" placeholder="请选择商品类型" clearable @change="getValue"
+                     :disabled="Ushow" title="上传商品图成功后，将不能再选择类型。若想修改类型需要删除上传的商品图后，再进行选择。">
             <el-option v-for="item in typeOptions"
                        :key="item.id"
                        :label="item.name"
@@ -116,49 +153,62 @@
           </el-select>
         </el-form-item>
         <el-form-item label="商品名称：" prop="name">
-          <el-input v-model="this.updateData.name" type="text" placeholder="请输入商品名称" clearable/>
+          <el-input v-model="updateData.name" type="text" placeholder="请输入商品名称" clearable/>
         </el-form-item>
         <el-form-item label="商品价格：" prop="price">
 <!--          <el-input v-model="this.updateData.price" type="number" prefix-icon="prefix-icon" @input="formatNum(this.updateData.price)">-->
 <!--                    :min=priceLimit.min :max=priceLimit.max-->
 <!--                    @blur="shuzi($event, this.updateData.price)" clearable>-->
 <!--          </el-input>-->
-          <el-input-number v-model="this.updateData.price" :precision="2" class="fll" placeholder="￥"
+          <el-input-number v-model="updateData.price" :precision="2" class="fll" placeholder="￥"
                            :min=priceLimit.min :max=priceLimit.max></el-input-number>
         </el-form-item>
         <el-form-item label="是否可销售：">
-          <el-radio-group v-model="this.updateData.isSale">
-            <el-radio v-model="this.updateData.isSale" :label="1" type="number">是</el-radio>
-            <el-radio v-model="this.updateData.isSale" :label="0" type="number">否</el-radio>
+          <el-radio-group v-model="updateData.isSale">
+            <el-radio v-model="updateData.isSale" :label="1" type="number">是</el-radio>
+            <el-radio v-model="updateData.isSale" :label="0" type="number">否</el-radio>
           </el-radio-group>
         </el-form-item>
 <!--        图片暂不能修改-->
-<!--        <el-form-item label="商品图：">-->
+        <el-form-item label="商品图：">
 <!--          <el-input v-model="this.updateData.picture" type="file" clearable/>-->
 <!--          &lt;!&ndash;          v-model储存文件路径&ndash;&gt;-->
-<!--        </el-form-item>-->
+          <el-upload
+              ref="upload"
+              :class="{dis: UuploadDisabled}"
+              :disabled="UtypeDisabled"
+              action="http://localhost:8090/goods/upload"
+              list-type="picture-card"
+              :before-upload="beforeUpload"
+              :headers="header"
+              @click="UgetValue"
+              :data="{type: UuploadValue}"
+              :on-success="UsuccessUpload"
+              :on-change="UhandleChange"
+              :on-remove="UhandleRemove">
+            <el-image :src="'https://g1.glypro19.com/img/'+updateData.picture"></el-image>
+<!--            <template #trigger>-->
+<!--              <el-image :src="'https://g1.glypro19.com/img/'+updateData.picture"></el-image>-->
+<!--              <el-button type="primary">上传图片</el-button>-->
+<!--            </template>-->
+          </el-upload>
+        </el-form-item>
         <el-form-item label="商品描述：">
-          <el-input v-model="this.updateData.remark" type="textarea" rows="3" resize="none"/>
+          <el-input v-model="updateData.remark" type="textarea" rows="3" resize="none"/>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click='updateGoods' class="ml">保存</el-button>
-          <el-button type="info" @click='updateData = ""'>重置</el-button>
+          <el-button type="primary" @click='updateGoods;updateData = this.$options.data().updateData' class="ml">保存</el-button>
+          <el-button type="info" @click='updateData = this.$options.data().updateData'>重置</el-button>
           <el-button type="info" @click='close; updateVisible = false'>取消</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
   </div>
-  <el-pagination
-      background
-      @current-change="handleCurrentChange"
-      :current-page="pageInfo.currentPage"
-      :page-size="pageInfo.size"
-      layout="prev, pager, next"
-      :total="pageInfo.total"
-      class="fenye" />
 </template>
 
 <script>
+import {ElMessage} from "element-plus";
+
 export default {
     name: "GoodsPage",
     created() {
@@ -196,9 +246,9 @@ export default {
             {required: true, message: '请输入商品名称', trigger: 'blur'}
           ],
           price: [
-            // {required: false, message: '请输入价格', trigger: 'blur'},
-            {min: 0, max: 200, message: '允许输入的价格范围在￥0至￥200以内', trigger: 'blur',
-              pattern:/^[0-9]*$/}
+            // {required: false, message: '请输入价格', trigger: 'blur'},没用....自写
+            // {min: 0, max: 200, message: '允许输入的价格范围在￥0至￥200以内',
+            //   pattern:/^\d+\.?\d{0,2}$/, trigger: 'blur'}
           ]
         },
         insertVisible: false,
@@ -213,14 +263,18 @@ export default {
         },
         updateVisible: false,
         updateData: {
-          // id:"",
-          // type:"",
-          // name:"",
-          // price:"",
-          // isSale:"",
-          // picture:"",
-          // remark:""
-        }
+        },
+        header: {
+          token:sessionStorage.getItem("token")
+        },
+        uploadValue: '',
+        UuploadValue: '',
+        typeDisabled: true,
+        UtypeDisabled: true,
+        uploadDisabled: false,
+        UuploadDisabled: false,
+        show: false,
+        Ushow: false
       }
     },
     methods: {
@@ -244,7 +298,7 @@ export default {
               this.typeOptions.unshift({id: -1, name:'所有类型'})
               // this.typeOptions.label = res.data.name
               // this.typeOptions.value = res.data.id
-              // console.log(this.typeOptions);
+              // console.log('类型：', this.typeOptions);
             }, err => {
               console.log("获取失败")
               console.log(err)
@@ -357,18 +411,119 @@ export default {
               console.log(err)
             }
         )
-        this.$router.go(0)
         // 成功提示....................................
+        ElMessage({
+          type:'success',
+          message:"删除成功"
+        })
+        this.$router.go(0)
       },
       close() {
         this.getAllType()
         // this.insertVisible = false
+      },
+      getValue() {
+        // console.log(this.typeOptions[this.insertData.type-1].nickname);
+        let v = this.typeOptions[this.insertData.type-1]
+        if (v === undefined) {
+          ElMessage({
+            type: 'warning',
+            message: "请先选择商品类型"
+          })
+          this.typeDisabled = true
+        }
+        else {
+          this.typeDisabled = false
+          this.uploadValue = v.nickname
+        }
+      },
+      UgetValue() {
+        // console.log(this.typeOptions[this.insertData.type-1].nickname);
+        let v = this.typeOptions[this.updateData.type-1]
+        if (v === undefined) {
+          ElMessage({
+            type: 'warning',
+            message: "请先选择商品类型"
+          })
+          this.UtypeDisabled = true
+        }
+        else {
+          this.UtypeDisabled = false
+          this.UuploadValue = v.nickname
+        }
+      },
+      beforeUpload(file){
+        console.log("file文件为", file)
+        const isJPG = file.type === "image/jpeg";
+        const isJPG2 = file.type === "image/jpg";
+        const isPNG = file.type === "image/png";
+        const isLt5M = file.size / 1024 / 1024 < 5;
+        if (!isJPG && !isJPG2 && !isPNG) {
+          ElMessage({
+            type:"error",
+            message:"仅支持上传jpg、jpeg或png格式图片"
+          })
+        }
+        if (!isLt5M) {
+          ElMessage({
+            type:"error",
+            message:"仅支持上传5MB以内的图片"
+          })
+        }
+        this.uploadImage = file
+        return (isJPG || isJPG2 || isPNG) && isLt5M;
+      },
+      successUpload(response) {
+        if (response.code == 200) {
+          let m = response.msg.split("/")
+          this.insertData.picture = m[3]+"/"+m[4]
+          // this.insertData.picture = m.substr(m.lastIndexOf("/")+1, m.length)
+          console.log("返回的路径为", response.msg, this.insertData.picture)
+          ElMessage({
+            type:'success',
+            message:"上传成功"
+          })
+        }
+      },
+      // 图片更改
+      handleChange() {
+        this.show = true
+        this.uploadDisabled = true;
+      },
+      // 删除图片
+      handleRemove() {
+        this.show = false
+        this.uploadDisabled = false;
+      },
+      UsuccessUpload(response) {
+        if (response.code == 200) {
+          let m = response.msg.split("/")
+          this.updateData.picture = m[3]+"/"+m[4]
+          console.log("U返回的路径为", response.msg, this.updateData.picture)
+          ElMessage({
+            type:'success',
+            message:"上传成功"
+          })
+        }
+      },
+      // 图片更改
+      UhandleChange() {
+        this.Ushow = true
+        this.UuploadDisabled = true;
+      },
+      // 删除图片
+      UhandleRemove() {
+        this.Ushow = false
+        this.UuploadDisabled = false;
       }
     }
 }
 </script>
 
 <style>
+  .all{
+    margin-left: 2.5%;
+  }
   .fll{
     margin-left: 0;
   }
@@ -385,16 +540,21 @@ export default {
     width: 170px;
   }
   .topItem{
-    margin: 12px 0 5px 0;
+    margin: 10px 0 5px 0;
   }
   .queryInput{
     width: 215px;
   }
   .main{
-    width: 85%;
+    width: 88%;
+    background-color: white;
+    box-shadow: 25px 25px 40px -23px grey;
   }
-  .fenye {
+  .fenye{
     margin-top: 5px;
-    margin-left: 32%;
+    margin-left: 34%;
+  }
+  .dis .el-upload--picture-card {
+    display: none;
   }
 </style>
