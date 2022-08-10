@@ -6,6 +6,7 @@ import * as SetMeal from "@/http/modules/SetMeal";
 import * as goods from "@/http/modules/goods"
 import * as user from "@/http/modules/user";
 import * as customer from "@/http/modules/customer";
+import * as userManagement from "@/http/modules/userManagement";
 
 export default {
     login,
@@ -15,5 +16,6 @@ export default {
     SetMeal,
     goods,
     user,
-    customer
+    customer,
+    userManagement
 }
