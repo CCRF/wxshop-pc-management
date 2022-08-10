@@ -1,7 +1,8 @@
 <template>
-  <el-input v-model="input" placeholder="搜索" style="width: 70%"/>
-  <el-button type="success" plain @click="search()" :disabled="clickButton">查询</el-button>
-  <el-button type="warning" :disabled="clickAddButton" plain @click="dialogVisibleAdd = true">新增</el-button>
+  <el-input v-model="input" class="search" placeholder="搜索" style="width: 70%"/>&nbsp;
+  <el-button type="success" plain @click="search()" class="search" :disabled="clickButton">查询</el-button>
+  <el-button type="warning" :disabled="clickAddButton" plain class="search" @click="dialogVisibleAdd = true">新增
+  </el-button>
   <el-dialog
       title="新增"
       v-model="dialogVisibleAdd"
@@ -88,41 +89,45 @@
       </span>
     </template>
   </el-dialog>
+  <div class="menuTable">
+    <el-table :data="tableData" stripe>
+      <el-table-column prop="name" label="菜单名字" width="250"/>
+      <el-table-column prop="url" label="菜单路径" width="300"/>
+      <el-table-column prop="parentName" label="菜单所属" width="300"/>
+      <el-table-column prop="type" label="菜单等级"/>
+      <el-table-column fixed="right" label="选择" width="200">
 
-  <el-table :data="tableData" stripe style="width: 100%">
-    <el-table-column prop="name" label="菜单名字" width="250"/>
-    <el-table-column prop="url" label="菜单路径" width="300"/>
-    <el-table-column prop="parentName" label="菜单所属" width="300"/>
-    <el-table-column prop="type" label="菜单等级"/>
-    <el-table-column fixed="right" label="选择" width="200">
+        <template #default="scope">
 
-      <template #default="scope">
+          <el-button type="primary" :plain="true" size="small" :disabled="clickUpdateButton"
+                     @click="getNewMsg(scope.row.name,scope.row.url,scope.row.id);dialogVisibleUpdate=true"
+          >修改信息
+          </el-button
+          >
 
-        <el-button type="primary" :plain="true" size="small" :disabled="clickUpdateButton"
-                   @click="getNewMsg(scope.row.name,scope.row.url,scope.row.id);dialogVisibleUpdate=true"
-        >修改信息
-        </el-button
-        >
+          <el-button type="primary" :plain="true" size="small" :disabled="clickDeleteButton"
+                     @click="getId(scope.row.id);dialogVisibleDelete = true">
+            删除
+          </el-button>
 
-        <el-button type="primary" :plain="true" size="small" :disabled="clickDeleteButton"
-                   @click="getId(scope.row.id);dialogVisibleDelete = true">
-          删除
-        </el-button>
+        </template>
 
-      </template>
-    </el-table-column>
-  </el-table>
+      </el-table-column>
 
-  <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="currentPage"
-      :page-size="10"
-      :pager-count="11"
-      layout="prev, pager, next"
-      :total="totalCount"
-      class="limit"
-  />
+    </el-table>
+    <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="currentPage"
+        :page-size="10"
+        :pager-count="11"
+        layout="prev, pager, next"
+        :total="totalCount"
+        class="limit"
+    />
+  </div>
+
+
 </template>
 
 <script>
@@ -455,5 +460,16 @@ export default {
 </script>
 
 <style scoped>
+.search {
+  position: relative;
+  top: 10px;
+  left: 25px;
+}
 
+.menuTable {
+  position: relative;
+  width: 95%;
+  top: 20px;
+  left: 25px;
+}
 </style>
