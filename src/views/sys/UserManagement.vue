@@ -3,39 +3,48 @@
   <div class="selectInp">
     <el-input   type="text" v-model="queryData"  placeholder="请输入查询内容"></el-input>
   </div>
-  <el-button class="setext" type="primary" round @click="query" :disabled="isClickButton">查询</el-button>
-  <el-button class="setext" type="primary" round @click="insertNewUser" :disabled="isClickButton">新增用户</el-button>
-  <el-button class="setext" type="primary" round @click="reload" :disabled="isClickButton">所有用户</el-button>
+  <div class="selectInp">
+    <el-button class="setext" type="primary" round @click="query" :disabled="isClickButton">查询</el-button>
+    <el-button class="setext" type="primary" round @click="insertNewUser" :disabled="isClickButton">新增用户</el-button>
+    <el-button class="setext" type="primary" round @click="reload" :disabled="isClickButton">所有用户</el-button>
+  </div>
+
   <el-table
       :data="userData.slice((currentPage-1)*PageSize,currentPage*PageSize)"
       border
       class="table"
-      style="width: 100%"
+      style="width:1520px"
+      :row-key="getRowKeys"
       @selection-change="handleSelectionChange">
 
     <el-table-column
         fixed
         label="全选"
+        align="center"
         width="40"
         type="selection"
+        :reserve-selection="true"
         >
     </el-table-column>
 
     <el-table-column
         fixed
+        align="center"
         prop="id"
         label="编号"
-        width="60">
+        width="50">
     </el-table-column>
     <el-table-column
         prop="name"
+        align="center"
         label="名字"
         width="80">
     </el-table-column>
     <el-table-column
         prop="nickName"
+        align="center"
         label="昵称"
-        width="80">
+        width="60">
     </el-table-column>
 <!--    <el-table-column-->
 <!--        prop="avatar"-->
@@ -44,58 +53,70 @@
 <!--    </el-table-column>-->
     <el-table-column
         prop="password"
+        align="center"
         label="密码"
         width="175">
     </el-table-column>
     <el-table-column
         prop="salt"
+        align="center"
         label="密码盐"
         width="175">
     </el-table-column>
     <el-table-column
         prop="email"
+        align="center"
         label="邮箱"
         width="195">
     </el-table-column>
     <el-table-column
         prop="mobile"
+        align="center"
         label="电话号码"
         width="120">
     </el-table-column>
     <el-table-column
         prop="status"
+        align="center"
         label="账户状态"
         :formatter="statusFormat"
         width="60">
     </el-table-column>
     <el-table-column
         prop="deptId"
+        align="center"
         label="部门编号"
         width="60">
     </el-table-column>
     <el-table-column
         prop="createBy"
+        align="center"
         label="创建者"
         width="60">
     </el-table-column>
     <el-table-column
+        align="center"
         prop="createTime"
         label="创建时间"
-        width="145">
+        :formatter="timeFormatter"
+        width="165">
     </el-table-column>
     <el-table-column
         prop="lastUpdateBy"
+        align="center"
         label="最后更新"
         width="60">
     </el-table-column>
     <el-table-column
         prop="delFlag"
+        align="center"
         label="封禁"
         :formatter="delFlagFormat"
         width="60">
     </el-table-column>
     <el-table-column
         fixed="right"
+        align="center"
         label="操作"
         width="160">
       <template #default="scope">
@@ -242,7 +263,9 @@
     </div>
   </el-dialog>
   <br>
-  <el-button class="setext" type="primary" round @click="deleteMore" :disabled="isClickButton">批量删除</el-button>
+  <div class="selectInp">
+    <el-button   type="primary" round @click="deleteMore" :disabled="isClickButton">批量删除</el-button>
+  </div>
   <el-pagination
       background
       @size-change="handleSizeChange"
@@ -253,6 +276,8 @@
       :total="this.totalCount"
       class="mt-4"
   />
+
+
 </template>
 
 <script>
@@ -291,7 +316,7 @@ export default {
   data(){
     return {
 
-        PageSize:10,
+        PageSize:7,
         currentPage:1,
         totalCount:"",
         isClickButton:true,
@@ -365,6 +390,23 @@ export default {
   },
 
   methods: {
+    getRowKeys(row) {
+      return row.id
+    },
+    timeFormatter(row){
+      let a = new Date(row.createTime).getTime();
+      let myDate = new Date(a);
+      let yy = String(myDate.getFullYear())
+      let mm = myDate.getMonth() + 1
+      let dd = String(myDate.getDate() < 10 ? '0' + myDate.getDate() : myDate.getDate())
+      let hou = String(myDate.getHours() < 10 ? '0' + myDate.getHours() : myDate.getHours())
+      let min = String(myDate.getMinutes() < 10 ? '0' + myDate.getMinutes() : myDate.getMinutes())
+      let sec = String(myDate.getSeconds() < 10 ? '0' + myDate.getSeconds() : myDate.getSeconds())
+      let date = yy + '-' + mm + '-' + dd +' '
+      let time = hou + ':' + min + ':' + sec
+      let data=date+time
+      return data;
+    },
     statusFormat(row){
       if(row.status===1){
         row.status="正常";
@@ -569,17 +611,28 @@ export default {
   margin-left: 50px;
 }
 .mt-4{
-  margin-left: 600px;
+  margin-top: 20px;
+  margin-left: 700px;
 }
 .selectInp{
+  position: relative;
   width: 300px;
   float: left;
+  top: 20px;
+  left: 25px;
+  right: 25px;
+  margin-bottom: 10px;
 }
 .m-2{
   width: 300px;
 }
 .setext{
   margin-left: 10px;
+}
+.table {
+  position: relative;
+  top: 20px;
+  left: 25px;
 }
 
 
