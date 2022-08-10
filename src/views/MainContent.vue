@@ -12,7 +12,8 @@ export default {
 
 <style>
     .mainContent{
-        background-color: beige;
+        background-color: white;
+        background-image: url("https://cdn.acwing.com/static/web/img/background.png");
         height: 100%;
         width: 85%;
         float: left;
