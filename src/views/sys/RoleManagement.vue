@@ -1,7 +1,7 @@
 <template>
-  <el-input v-model="input" placeholder="搜索" style="width: 70%"/>
-  <el-button type="success" plain @click="search()" :disabled="clickButton">查询</el-button>
-  <el-button type="warning" :disabled="clickAddButton" plain @click="dialogVisibleAdd = true">新增</el-button>
+  <el-input v-model="input" class="search"  placeholder="搜索" style="width: 70%"/>
+  <el-button type="success" class="search" plain @click="search()" :disabled="clickButton">查询</el-button>
+  <el-button type="warning" class="search" :disabled="clickAddButton" plain @click="dialogVisibleAdd = true">新增</el-button>
   <el-dialog
       title="新增"
       v-model="dialogVisibleAdd"
@@ -103,6 +103,7 @@
     </template>
   </el-dialog>
 
+  <div class="roleTable">
   <el-table :data="tableData" stripe style="width: 100%">
     <el-table-column prop="remark" label="角色" width="250"/>
     <el-table-column prop="name" label="名字" width="300"/>
@@ -144,6 +145,7 @@
       :total="totalCount"
       class="limit"
   />
+  </div>
 </template>
 
 <script>
@@ -582,5 +584,16 @@ export default {
 </script>
 
 <style scoped>
+.search {
+  position: relative;
+  top: 10px;
+  left: 25px;
+}
 
+.roleTable {
+  position: relative;
+  width: 95%;
+  top: 20px;
+  left: 25px;
+}
 </style>
