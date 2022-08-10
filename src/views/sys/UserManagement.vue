@@ -509,7 +509,7 @@ export default {
       let _this= this;
       let nowDate=this.getCurrentTime();
       this.updateData.nowTime=nowDate;
-      this.updateData.roleId=this.roleData.name;
+      this.updateData.roleId=this.roleData.remark;
       console.log("id",this.updateData.roleId)
       console.log(JSON.stringify(this.updateData))
       let d = JSON.parse(JSON.stringify(this.updateData))
@@ -561,7 +561,7 @@ export default {
 
       let nowDate=this.getCurrentTime();
       this.insertData.nowTime=nowDate;
-      this.insertData.roleId=this.roleData.name;
+      this.insertData.roleId=this.roleData.remark;
       console.log("roleId",this.insertData.roleId)
       console.log(JSON.stringify(this.insertData))
       let data = JSON.parse(JSON.stringify(this.insertData))
