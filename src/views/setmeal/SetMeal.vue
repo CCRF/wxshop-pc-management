@@ -1,19 +1,25 @@
 <template>
-  <el-input placeholder="请输入你想要查询的套餐名称" v-model="Mealname"/>&nbsp;
-  <el-button @click="selectByName" class="select">点击查询</el-button>
+  <div>
+  <div class="Search">
+    <el-input placeholder="请输入你想要查询的套餐名称" v-model="Mealname" />&nbsp;
+  </div>
+  <div class="SearchButton">
+    <el-button @click="selectByName" class="select" type="primary">点击查询</el-button>
+    <el-popover v-model:visible="visible" placement="top" :width="160">
+      <p>你想要新加一份套餐吗？</p>
+      <div style="text-align: right; margin: 0">
+        <el-button size="small" text @click="visible = false">取消</el-button>
+        <el-button size="small" type="primary" @click="m1"
+        >是的，我想要</el-button
+        >
+      </div>
+      <template #reference>
+        <el-button @click="visible = true">新增</el-button>
+      </template>
+    </el-popover>
+  </div>
+  </div>
 
-  <el-popover v-model:visible="visible" placement="top" :width="160">
-    <p>你想要新加一份套餐吗？</p>
-    <div style="text-align: right; margin: 0">
-      <el-button size="small" text @click="visible = false">取消</el-button>
-      <el-button size="small" type="primary" @click="m1"
-      >是的，我想要</el-button
-      >
-    </div>
-    <template #reference>
-      <el-button @click="visible = true">新增</el-button>
-    </template>
-  </el-popover>
   <!--新增套餐（遮罩层）-->
   <el-dialog v-model="dialogVisible" title="Tips" width="50%" draggable>
     <span>请输入你想要添加的套餐信息吧</span>
@@ -190,42 +196,52 @@
   </el-dialog>
 
   <!--主要展示界面-->
-  <el-table :data="list" height="530px">
-    <el-table-column label="参 考 图 片" prop="picture">
-      <template #default="scope">
-        <el-image style="width: 100px; height: 100px" :src="scope.row.picture" fit="cover" alt="图片暂时没有加载出来哦"/>
-      </template>
-    </el-table-column>
-    <el-table-column prop="name" label="套 餐 名 称"/>
-    <el-table-column prop="description" label="套 餐 描 述" />
-    <el-table-column prop="price" label="套 餐 价 格" />
-    <el-table-column prop="sale" label="月 销 售 量" />
-    <el-table-column prop="flavor" label="口 味" />
-    <el-table-column prop="contain" label="套 餐 内 容"  show-overflow-tooltip/>
-    <el-table-column align="left" fixed="right">
-      <template #default="scope">
-        <el-button size="small" @click="handleEdit(scope.row)"
-        >修改套餐
-        </el-button>
-        <el-button
-            size="small"
-            type="danger"
-            @click="handleDelete(scope.row)"
-            style="margin: 10px 0 0 0"
-        >删除套餐</el-button
-        >
-      </template>
-    </el-table-column>
-  </el-table>
-  <el-pagination
-      background
-      layout="prev, pager, next"
-      :total="totalPage"
-      :page-size="pageSize"
-      :current-page="currentPage"
-      @size-change="handleSizeChange"
-      @current-change="handleSizeChange"
-  />
+  <div class="MainDisplay">
+    <el-table :data="list" height="530px" style="border: rgba(159,156,156,0.5) 1px solid" >
+      <el-table-column label="参 考 图 片" prop="picture" align="center">
+        <template #default="scope">
+          <el-image style="width: 100px; height: 100px" :src="scope.row.picture" fit="cover" alt="图片暂时没有加载出来哦"/>
+        </template>
+      </el-table-column>
+      <el-table-column prop="name" label="套 餐 名 称" align="center"/>
+      <el-table-column prop="description" label="套 餐 描 述" align="center"/>
+      <el-table-column prop="price" label="套 餐 价 格" align="center" />
+      <el-table-column prop="sale" label="月 销 售 量" align="center" />
+      <el-table-column prop="flavor" label="口 味" align="center"/>
+      <el-table-column prop="contain" label="套 餐 内 容" align="center" show-overflow-tooltip/>
+      <el-table-column align="center" fixed="right" label="功能" >
+        <template #default="scope">
+
+          <el-button size="small" @click="handleEdit(scope.row)"
+          >修改套餐
+          </el-button>
+          <el-button
+              size="small"
+              type="danger"
+              @click="deleteSetMeal(scope.row)"
+              style="margin: 10px 0 0 0"
+          >删除套餐</el-button
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-dialog title="删 除" v-model="DeleteRequest" width="30%">
+      确认要删除吗？<br><br><br>
+      <el-button @click="DeleteRequest=false">取消</el-button>
+      <el-button type="danger" @click="handleDelete">确定</el-button>
+    </el-dialog>
+    <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="totalPage"
+        :page-size="pageSize"
+        :current-page="currentPage"
+        @size-change="handleSizeChange"
+        @current-change="handleSizeChange"
+    />
+  </div>
+
+
 </template>
 <script>
 import {toRaw} from "vue";
@@ -251,7 +267,7 @@ export default {
       //这些是与图片相关的,选择器（选择套餐图片的样式）
       value:"",//新增套餐的值
       updateValue:"",//修改套餐的值
-      uploadImage:"",
+
       imageList:[],//套餐图片列表
       // roleFunction : true,//判断用户是否有权限来显示功能操作
       goods:[],
@@ -262,7 +278,8 @@ export default {
       currentPage:1,
       totalPage:20,
       pageSize: 4,
-
+      DeleteRequest:false,//删除请求框
+      delSetmeal:{},
       uploadImage:"",//上传返回的图片url
       header:{
         token:sessionStorage.getItem("token"),
@@ -282,26 +299,27 @@ export default {
         console.log("输入的内容为：",this.Mealname)
         location.reload()
       }else {
-        this.$api.SetMeal.findSetMeal(`/setMeal/selectByName/${this.Mealname}`)
+        this.$api.SetMeal.findSetMeal(`/setMeal/selectByName/${this.Mealname}/${this.currentPage}/${this.pageSize}`)
             .then(res=>{
+                if (res.code==200){
+                  this.$message({type:"success",message:"查找成功"})
                   console.log("查询到的结果为：",res)
-                  this.list = res.data
+                  this.list = res.data.rows
+                  this.totalPage = res.data.totalCount
+                }
                 },err=>{
                   console.log("查询失败",err)
                 }
             )
-        this.Mealname = ""
 
       }
     },
 
     //通过id查询到数据回显在更新框中
     handleEdit(row){
-      if (confirm("确认要修改吗？")){
         this.updateVisible = true
         for (let i = 0; i < this.goods.length; i++) {
           this.goods[i].value=0
-        }
         console.log(row.id)
         this.$api.SetMeal.findById(`/setMeal/selectById/${row.id}`)
             .then(res=>{
@@ -320,26 +338,36 @@ export default {
             )
       }
     },
+    deleteSetMeal(msg){//删除提示
+      this.DeleteRequest = true
+      this.delSetmeal = msg;
 
+    },
     //删除信息
-    handleDelete(msg){
-      if (confirm("确定要删除吗")){
+    handleDelete(){
+      this.DeleteRequest = false
+        const msg = this.delSetmeal
+
         // console.log(msg)
         console.log("11111",msg.id)
-        this.$api.SetMeal.deleteById("/setMeal/deleteById",msg.id)
+        console.log("图片路径为",msg.picture)
+        const deleteSetMeal =new FormData()
+        deleteSetMeal.append("id",msg.id)
+        deleteSetMeal.append("imageUrl",msg.picture)
+        this.$api.SetMeal.deleteById("/setMeal/deleteById",deleteSetMeal)
             .then(res=>{
                   console.log("返回的结果为：",res)
               if (res.code==200){
-                this.$message({message:'更新成功',type:'success'})
+                this.$message({message:'删除成功',type:'success'})
                 location.reload()
               }
                 },err=>{
                   console.log(err)
-                  this.$message.error('更新失败')
+                  this.$message.error('删除失败')
                 }
             )
+        location.reload()
 
-      }
     },
 
     //提交数据
@@ -486,11 +514,27 @@ export default {
 
     handleSizeChange(val){
       this.currentPage = val
-      this.$api.SetMeal.findSetMeal(`/setMeal/page/${this.currentPage}/${this.pageSize}`)
-          .then(res=>{
+      console.log("输入的数据为",this.Mealname)
+      if (this.Mealname!=""){
+        this.$api.SetMeal.findSetMeal(`/setMeal/selectByName/${this.Mealname}/${val}/${this.pageSize}`)
+        .then(res=>{
+          if(res.code===200){
+            this.$message({type:'success',message:"查找成功"})
+            this.totalPage = res.data.totalCount
             this.list = res.data.rows
-            console.log("返回的数据为11111",res.data)
-          })
+          }else {
+            this.$message({type:'error',message:"查找失败，请重试"})
+          }
+          console.log(res)
+        })
+
+      }else {
+        this.$api.SetMeal.findSetMeal(`/setMeal/page/${val}/${this.pageSize}`)
+            .then(res=>{
+              this.list = res.data.rows
+              console.log("返回的数据为11111",res.data)
+            })
+      }
     },
     Upload(aa){
       console.log("此时uploadImag为",this.uploadImage)
@@ -583,5 +627,22 @@ export default {
 <style>
 .select{
   display: block;
+}
+.Search{
+  width: 40%;
+  margin: 20px 0 0px 30px;
+  float: left;
+}
+.MainDisplay{
+  width: 95%;
+  padding: 30px;
+  -moz-box-shadow: 2px 2px 10px #909090;
+  -webkit-box-shadow: 2px 2px 10px #909090;
+  box-shadow:2px 2px 10px #909090;
+}
+.SearchButton{
+  display: block;
+  float: left;
+  margin: 20px 0 10px 30px;
 }
 </style>
