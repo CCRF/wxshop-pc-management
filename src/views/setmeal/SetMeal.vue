@@ -79,13 +79,14 @@
               :value="item.value"
           />
         </el-select>
-        <el-image style="width: 100px; height: 100px" :src="value" fit="cover" v-show="value" alt="图片暂时没有加载出来哦"/>
+        <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setMeal/'+value" fit="cover" v-show="value" alt="图片暂时没有加载出来哦"/>
         <br>
       </el-form-item>
       <el-form-item label="点我上传自己的图片">
-<!--        action="https://g1.glypro19.com/setMeal/upload"-->
+<!--        action="http://localhost:8090/setMeal/upload"-->
+
           <el-upload
-              action="http://localhost:8090/setMeal/upload"
+              action="https://g1.glypro19.com/setMeal/upload"
               method="post"
               show-file-list="false"
               :before-upload="beforeAvatarUpload"
@@ -174,7 +175,7 @@
       </el-form-item>
       <el-form-item label="点我上传自己的图片">
         <el-upload
-            action="http://localhost:8090/setMeal/upload"
+            action="https://g1.glypro19.com/setMeal/upload"
             method="post"
             show-file-list="false"
             :before-upload="beforeAvatarUpload"
@@ -371,7 +372,7 @@ export default {
                   this.$message.error('删除失败')
                 }
             )
-        // location.reload()
+        location.reload()
 
     },
 
@@ -408,8 +409,8 @@ export default {
                     this.$message({message:"提交失败！",type:'error'})
                     this.uploadImage==""
                   }
-                }
-                // location.reload()
+                },
+                location.reload()
             )
       }
     },
@@ -468,7 +469,7 @@ export default {
                 this.uploadImage = ""
           }
           )
-      // location.reload()
+      location.reload()
     },
 
     m1(){
@@ -606,7 +607,7 @@ export default {
                   response.data.push(i)
                 }else {
                   console.log(response.data[i])
-                  list.push({"label":"套餐"+[i],"value":response.data[i]})
+                  list.push({"label":"套餐"+[i],"value":'https://g1.glypro19.com/img/setMeal/'+response.data[i]})
                 }
               }
               console.log("列表为",list)
