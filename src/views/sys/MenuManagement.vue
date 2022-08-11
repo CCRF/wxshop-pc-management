@@ -15,12 +15,6 @@
         size="small"
     />
     <br/><br/>
-    <el-input
-        v-model="addUrl"
-        placeholder="菜单路径"
-        size="small"
-    />
-    <br/><br/>
     <el-select v-model="value" clearable placeholder="父菜单" size="small">
       <el-option
           v-for="item in allMenu"
@@ -29,12 +23,6 @@
           :value="item"
       />
     </el-select>
-    <br/><br/>
-    <el-input
-        v-model="addPerms"
-        placeholder="权限字段 (如果为按钮则需填写，类似于sys:xxx:xxx)"
-        size="small"
-    />
     <br/><br/>
 
 
@@ -59,9 +47,6 @@
     <el-form :model="newMessage" label-width="120px">
       <el-form-item label="菜单名字">
         <el-input v-model="newMessage.name"/>
-      </el-form-item>
-      <el-form-item label="菜单路径(非必须)">
-        <el-input v-model="newMessage.url"/>
       </el-form-item>
     </el-form>
 
@@ -114,8 +99,8 @@
       </template>
     </el-table-column>
     <el-table-column prop="parentName" label="菜单所属" width="200"/>
-    <el-table-column prop="perms" label="权限字段" width="200"/>
-    <el-table-column prop="url" label="菜单路径"/>
+    <el-table-column prop="createTime" label="创建时间" width="230"/>
+    <el-table-column prop="lastUpdateTime" label="修改时间"/>
     <el-table-column fixed="right" header-align="center" label="选择" width="160">
 
       <template #default="scope">
@@ -158,8 +143,6 @@ let updateId = ref("");
 const value1 = ref([])
 let newId = ref("");
 const addName = ref("");
-const addUrl = ref("");
-const addPerms = ref("");
 const input = ref("");
 const arrayAuthority = ref([])
 const dialogVisibleDelete = ref(false)
@@ -177,14 +160,11 @@ export default {
       dialogVisibleUpdate,
       dialogVisibleAdd,
       addName,
-      addUrl,
-      addPerms,
       form,
       options: [],
       value1,
       newMessage: {
         name: '',
-        url: '',
       },
       input,
       clickAddButton: true,
@@ -298,8 +278,37 @@ export default {
 
 
             }
+            let time1 = ''
+            let time2 = ''
             this.tableData = res.data
-
+            for (let i = 0; i < this.tableData.length; i++) {
+              time1 = this.dateFormat(this.tableData[i].createTime);
+              this.tableData[i].createTime = time1
+              if (this.tableData[i].lastUpdateTime) {
+                time2 = this.dateFormat(this.tableData[i].lastUpdateTime);
+                this.tableData[i].lastUpdateTime = time2
+              }
+              if (this.tableData[i].children) {
+                for (let j = 0; j < this.tableData[i].children.length; j++) {
+                  time1 = this.dateFormat(this.tableData[i].children[j].createTime);
+                  this.tableData[i].children[j].createTime = time1
+                  if (this.tableData[i].children[j].lastUpdateTime) {
+                    time2 = this.dateFormat(this.tableData[i].children[j].lastUpdateTime);
+                    this.tableData[i].children[j].lastUpdateTime = time2
+                  }
+                  if (this.tableData[i].children[j].children) {
+                    for (let k = 0; k < this.tableData[i].children[j].children.length; k++) {
+                      time1 = this.dateFormat(this.tableData[i].children[j].children[k].createTime);
+                      this.tableData[i].children[j].children[k].createTime = time1
+                      if (this.tableData[i].children[j].children[k].lastUpdateTime) {
+                        time2 = this.dateFormat(this.tableData[i].children[j].children[k].lastUpdateTime);
+                        this.tableData[i].children[j].children[k].lastUpdateTime = time2
+                      }
+                    }
+                  }
+                }
+              }
+            }
             for (let j = 0; j < tableMenu.length; j++) {
               let copylist1 = {
                 name: '',
@@ -401,8 +410,6 @@ export default {
 
       this.$api.menu.changeMsg('/menu/addMsg', {
         "name": addName.value,
-        "url": addUrl.value,
-        "perms": addPerms.value,
         "type": garage,
         "parentId": parentId
       }).then(res => {
@@ -427,7 +434,6 @@ export default {
 
 
       this.newMessage.name = r
-      this.newMessage.url = n
 
       updateId = i
       console.log(r, n)
@@ -436,9 +442,8 @@ export default {
     ,
     updateMsg() {
 
-      this.$api.menu.changeMsg('/menu/updateName/${this.currentPage}/${this.pageSize}', {
+      this.$api.menu.changeMsg('/menu/updateName', {
         "name": this.newMessage.name,
-        "url": this.newMessage.url,
         "id": updateId
       }).then(res => {
         if (res.code === 200) {
@@ -477,11 +482,41 @@ export default {
             for (let i = 0; i < this.allSearch.length; i++) {
               for (let j = 0; j < res.data.length; j++) {
                 if (res.data[j].name === this.allSearch[i].name) {
-                  res.data[j].parentName=this.allSearch[i].parentName
+                  res.data[j].parentName = this.allSearch[i].parentName
                 }
               }
             }
             this.tableData = res.data
+            let time1 = ''
+            let time2 = ''
+            for (let i = 0; i < this.tableData.length; i++) {
+              time1 = this.dateFormat(this.tableData[i].createTime);
+              this.tableData[i].createTime = time1
+              if (this.tableData[i].lastUpdateTime) {
+                time2 = this.dateFormat(this.tableData[i].lastUpdateTime);
+                this.tableData[i].lastUpdateTime = time2
+              }
+              if (this.tableData[i].children) {
+                for (let j = 0; j < this.tableData[i].children.length; j++) {
+                  time1 = this.dateFormat(this.tableData[i].children[j].createTime);
+                  this.tableData[i].children[j].createTime = time1
+                  if (this.tableData[i].children[j].lastUpdateTime) {
+                    time2 = this.dateFormat(this.tableData[i].children[j].lastUpdateTime);
+                    this.tableData[i].children[j].lastUpdateTime = time2
+                  }
+                  if (this.tableData[i].children[j].children) {
+                    for (let k = 0; k < this.tableData[i].children[j].children.length; k++) {
+                      time1 = this.dateFormat(this.tableData[i].children[j].children[k].createTime);
+                      this.tableData[i].children[j].children[k].createTime = time1
+                      if (this.tableData[i].children[j].children[k].lastUpdateTime) {
+                        time2 = this.dateFormat(this.tableData[i].children[j].children[k].lastUpdateTime);
+                        this.tableData[i].children[j].children[k].lastUpdateTime = time2
+                      }
+                    }
+                  }
+                }
+              }
+            }
           } else {
             this.getMsg()
           }
@@ -491,14 +526,17 @@ export default {
       }
 
     },
-
-
     cleanMsg() {
 
       addName.value = null
-      addUrl.value = null
-      addPerms.value = null
       this.value = ""
+    },
+    dateFormat(dateStr) {
+      const dt = new Date(dateStr);
+      const y = dt.getFullYear()
+      const m = dt.getMonth() + 1
+      const d = dt.getDate()
+      return `${y}-${m}-${d}`
     }
 
 
