@@ -139,31 +139,5 @@
     }
   }
 
-  :deep(.too-old td) {
-    border: 1px solid #fc0017 !important;
-    border-radius: 7px;
-    animation: fade 1200ms;
-  }
 
-  :deep(.age) {
-    background-color: rgba(0, 128, 0, 0.75) !important;
-  }
-
-  :deep(.too-old .age) {
-    background-color: rgba(0, 0, 128, 0.75) !important;
-  }
-
-
-  @keyframes fade {
-    from {
-      opacity: 1.0;
-    }
-    50% {
-      opacity: 0.0;
-    }
-    to {
-      opacity: 1.0;
-    }
-
-  }
 </style>
