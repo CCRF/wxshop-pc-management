@@ -1,6 +1,6 @@
 <template>
   <el-input v-model="input" class="search" placeholder="搜索" style="width: 70%"/>&nbsp;
-  <el-button type="success" plain @click="search()" class="search" :disabled="clickButton">查询</el-button>
+  <el-button type="success" class="search" plain @click="search()" :disabled="clickButton">查询</el-button>
   <el-button type="warning" :disabled="clickAddButton" plain class="search" @click="dialogVisibleAdd = true">新增
   </el-button>
   <el-dialog
@@ -12,12 +12,6 @@
     <el-input
         v-model="addName"
         placeholder="菜单名字(必填)"
-        size="small"
-    />
-    <br/><br/>
-    <el-input
-        v-model="addUrl"
-        placeholder="菜单路径"
         size="small"
     />
     <br/><br/>
@@ -54,10 +48,6 @@
       <el-form-item label="菜单名字">
         <el-input v-model="newMessage.name"/>
       </el-form-item>
-      <el-form-item label="菜单路径(非必须)">
-        <el-input v-model="newMessage.url"/>
-      </el-form-item>
-
     </el-form>
 
 
@@ -89,43 +79,48 @@
       </span>
     </template>
   </el-dialog>
-  <div class="menuTable">
-    <el-table :data="tableData" stripe>
-      <el-table-column prop="name" label="菜单名字" width="250"/>
-      <el-table-column prop="url" label="菜单路径" width="300"/>
-      <el-table-column prop="parentName" label="菜单所属" width="300"/>
-      <el-table-column prop="type" label="菜单等级"/>
-      <el-table-column fixed="right" label="选择" width="200">
 
-        <template #default="scope">
+  <el-table
+      :data="tableData"
+      stripe
+      default-expand-all
+      border
+      class="menuTable"
+      height="500"
+      row-key="id"
+      :tree-props="treeConfig"
+  >
+    <el-table-column prop="name" label="菜单名字" width="200"/>
+    <el-table-column label="菜单等级" width="200">
+      <template #default="scope">
+        <el-tag v-if="scope.row.type==='目录'" type="primary">{{ scope.row.type }}</el-tag>
+        <el-tag v-else-if="scope.row.type==='菜单'" type="success">{{ scope.row.type }}</el-tag>
+        <el-tag v-else type="warning">{{ scope.row.type }}</el-tag>
+      </template>
+    </el-table-column>
+    <el-table-column prop="parentName" label="菜单所属" width="200"/>
+    <el-table-column prop="createTime" label="创建时间" width="230"/>
+    <el-table-column prop="lastUpdateTime" label="修改时间"/>
+    <el-table-column fixed="right" header-align="center" label="选择" width="160">
 
-          <el-button type="primary" :plain="true" size="small" :disabled="clickUpdateButton"
-                     @click="getNewMsg(scope.row.name,scope.row.url,scope.row.id);dialogVisibleUpdate=true"
-          >修改信息
-          </el-button
-          >
+      <template #default="scope">
 
-          <el-button type="primary" :plain="true" size="small" :disabled="clickDeleteButton"
-                     @click="getId(scope.row.id);dialogVisibleDelete = true">
-            删除
-          </el-button>
+        <el-button type="success" :plain="true" size="small" :disabled="clickUpdateButton"
+                   @click="getNewMsg(scope.row.name,scope.row.url,scope.row.id);dialogVisibleUpdate=true"
+        >修改信息
+        </el-button
+        >
 
-        </template>
+        <el-button type="danger" :plain="true" size="small" :disabled="clickDeleteButton"
+                   @click="getId(scope.row.id);dialogVisibleDelete = true">
+          删除
+        </el-button>
 
-      </el-table-column>
+      </template>
 
-    </el-table>
-    <el-pagination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="currentPage"
-        :page-size="10"
-        :pager-count="11"
-        layout="prev, pager, next"
-        :total="totalCount"
-        class="limit"
-    />
-  </div>
+    </el-table-column>
+
+  </el-table>
 
 
 </template>
@@ -148,7 +143,6 @@ let updateId = ref("");
 const value1 = ref([])
 let newId = ref("");
 const addName = ref("");
-const addUrl = ref("");
 const input = ref("");
 const arrayAuthority = ref([])
 const dialogVisibleDelete = ref(false)
@@ -166,22 +160,17 @@ export default {
       dialogVisibleUpdate,
       dialogVisibleAdd,
       addName,
-      addUrl,
       form,
       options: [],
       value1,
       newMessage: {
         name: '',
-        url: '',
       },
       input,
       clickAddButton: true,
+      clickButton: true,
       clickDeleteButton: true,
       clickUpdateButton: true,
-      clickButton: true,
-      totalCount: 100,
-      currentPage: 1,
-      pageSize: 10,
       dataAuthority: [],
       defaultProps: {
         children: 'children',
@@ -190,7 +179,13 @@ export default {
       arrayAuthority,
       allMenu: [],
       value,
-      allObject: []
+      allObject: [],
+      allSearch: [],
+      treeConfig: {
+        children: 'children',
+        hasChildren: 'hasChildren'
+      },
+
     }
   },
 
@@ -207,22 +202,22 @@ export default {
         let name = sessionStorage.getItem("username")
 
         if (sessionStorage.getItem("username") === "admin") {
-          this.clickButton = false
           this.clickAddButton = false
           this.clickUpdateButton = false
           this.clickDeleteButton = false
+          this.clickButton = false
         } else {
           this.$api.roleManagement.getAll(`/role/getNewMsgByName/${name}`).then(res => {
-
+            console.log("aa", res)
             for (let j = 0; j < res.data.length; j++) {
-              if (res.data[j].name === "菜单查看") {
-                this.clickButton = false
-              } else if (res.data[j].name === "菜单新增") {
+              if (res.data[j].perms === "sys:menu:add") {
                 this.clickAddButton = false
-              } else if (res.data[j].name === "菜单修改") {
+              } else if (res.data[j].perms === "sys:menu:edit") {
                 this.clickUpdateButton = false
-              } else if (res.data[j].name === "菜单删除") {
+              } else if (res.data[j].perms === "sys:menu:delete") {
                 this.clickDeleteButton = false
+              } else if (res.data[j].perms === "sys:menu:view") {
+                this.clickButton = false
               }
             }
 
@@ -236,46 +231,122 @@ export default {
 
     getMsg() {
       let allPermission1 = []
+
+      let tableMenu = []
+      this.$api.menu.findNavTree("/menu/findNavTree", {"userName": "admin"}).then(res => {
+        tableMenu = res.data
+      })
       this.$api.menu.findNavTree("/menu/findAllNavTree", {"userName": "admin"}).then(res => {
 
-            for (let j = 0; j < res.data.length; j++) {
+
+            for (let i = 0; i < res.data.length; i++) {
+              if (res.data[i].type === 0) {
+                res.data[i].type = '目录'
+              }
+              if (res.data[i].type === 1) {
+                res.data[i].type = '菜单'
+              }
+              if (res.data[i].type === 2) {
+                res.data[i].type = '按钮'
+              }
+              if (res.data[i].children) {
+                for (let j = 0; j < res.data[i].children.length; j++) {
+                  if (res.data[i].children[j].type === 0) {
+                    res.data[i].children[j].type = '目录'
+                  }
+                  if (res.data[i].children[j].type === 1) {
+                    res.data[i].children[j].type = '菜单'
+                  }
+                  if (res.data[i].children[j].type === 2) {
+                    res.data[i].children[j].type = '按钮'
+                  }
+                  if (res.data[i].children[j].children) {
+                    for (let k = 0; k < res.data[i].children[j].children.length; k++) {
+                      if (res.data[i].children[j].children[k].type === 0) {
+                        res.data[i].children[j].children[k].type = '目录'
+                      }
+                      if (res.data[i].children[j].children[k].type === 1) {
+                        res.data[i].children[j].children[k].type = '菜单'
+                      }
+                      if (res.data[i].children[j].children[k].type === 2) {
+                        res.data[i].children[j].children[k].type = '按钮'
+                      }
+                    }
+                  }
+                }
+              }
+
+
+            }
+            let time1 = ''
+            let time2 = ''
+            this.tableData = res.data
+            for (let i = 0; i < this.tableData.length; i++) {
+              time1 = this.dateFormat(this.tableData[i].createTime);
+              this.tableData[i].createTime = time1
+              if (this.tableData[i].lastUpdateTime) {
+                time2 = this.dateFormat(this.tableData[i].lastUpdateTime);
+                this.tableData[i].lastUpdateTime = time2
+              }
+              if (this.tableData[i].children) {
+                for (let j = 0; j < this.tableData[i].children.length; j++) {
+                  time1 = this.dateFormat(this.tableData[i].children[j].createTime);
+                  this.tableData[i].children[j].createTime = time1
+                  if (this.tableData[i].children[j].lastUpdateTime) {
+                    time2 = this.dateFormat(this.tableData[i].children[j].lastUpdateTime);
+                    this.tableData[i].children[j].lastUpdateTime = time2
+                  }
+                  if (this.tableData[i].children[j].children) {
+                    for (let k = 0; k < this.tableData[i].children[j].children.length; k++) {
+                      time1 = this.dateFormat(this.tableData[i].children[j].children[k].createTime);
+                      this.tableData[i].children[j].children[k].createTime = time1
+                      if (this.tableData[i].children[j].children[k].lastUpdateTime) {
+                        time2 = this.dateFormat(this.tableData[i].children[j].children[k].lastUpdateTime);
+                        this.tableData[i].children[j].children[k].lastUpdateTime = time2
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            for (let j = 0; j < tableMenu.length; j++) {
               let copylist1 = {
                 name: '',
                 parentName: '',
                 type: '',
                 id: ''
               }
-              copylist1.name = res.data[j].name
-              copylist1.parentName = res.data[j].parentName
-              copylist1.type = res.data[j].type
-              copylist1.id = res.data[j].id
+              copylist1.name = tableMenu[j].name
+              copylist1.parentName = tableMenu[j].parentName
+              copylist1.type = tableMenu[j].type
+              copylist1.id = tableMenu[j].id
               allPermission1.push(copylist1)
-              if (res.data[j].children) {
-                for (let k = 0; k < res.data[j].children.length; k++) {
+              if (tableMenu[j].children) {
+                for (let k = 0; k < tableMenu[j].children.length; k++) {
                   let copylist1 = {
                     name: '',
                     parentName: '',
                     type: '',
                     id: ''
                   }
-                  copylist1.name = res.data[j].children[k].name
-                  copylist1.parentName = res.data[j].children[k].parentName
-                  copylist1.type = res.data[j].children[k].type
-                  copylist1.id = res.data[j].children[k].id
+                  copylist1.name = tableMenu[j].children[k].name
+                  copylist1.parentName = tableMenu[j].children[k].parentName
+                  copylist1.type = tableMenu[j].children[k].type
+                  copylist1.id = tableMenu[j].children[k].id
                   allPermission1.push(copylist1)
-                  if (res.data[j].children[k].children) {
+                  if (tableMenu[j].children[k].children) {
 
-                    for (let p = 0; p < res.data[j].children[k].children.length; p++) {
+                    for (let p = 0; p < tableMenu[j].children[k].children.length; p++) {
                       let copylist1 = {
                         name: '',
                         parentName: '',
                         type: '',
                         id: ''
                       }
-                      copylist1.name = res.data[j].children[k].children[p].name
-                      copylist1.parentName = res.data[j].children[k].children[p].parentName
-                      copylist1.type = res.data[j].children[k].children[p].type
-                      copylist1.id = res.data[j].children[k].children[p].id
+                      copylist1.name = tableMenu[j].children[k].children[p].name
+                      copylist1.parentName = tableMenu[j].children[k].children[p].parentName
+                      copylist1.type = tableMenu[j].children[k].children[p].type
+                      copylist1.id = tableMenu[j].children[k].children[p].id
                       allPermission1.push(copylist1)
                     }
                   }
@@ -284,28 +355,13 @@ export default {
               }
             }
             this.allObject = allPermission1
-            console.log("allPermission1", this.allObject)
-
-          }
-      )
-      this.$api.menu.findNavTree(`/menu/findAll/${this.currentPage}/${this.pageSize}`).then(res => {
-
-
-        this.totalCount = res.data.totalCount;
-        for (let i = 0; i < allPermission1.length; i++) {
-          for (let o = 0; o < res.data.rows.length; o++) {
-            if (res.data.rows[o].name === allPermission1[i].name) {
-              res.data.rows[o].parentName = allPermission1[i].parentName
+            this.allSearch = allPermission1
+            console.log("this.tableData", allPermission1)
+            for (let i = 0; i < allPermission1.length; i++) {
+              this.allMenu.push(allPermission1[i].name)
             }
           }
-        }
-        this.tableData = res.data.rows
-        console.log(this.tableData)
-        for (let i = 0; i < allPermission1.length; i++) {
-          this.allMenu.push(allPermission1[i].name)
-        }
-        console.log("allMenu", this.allMenu)
-      })
+      )
 
 
     }
@@ -318,7 +374,7 @@ export default {
     ,
     deleteMessage(id) {
       id = newId
-      console.log(id)
+
       this.$api.menu.deleteMsg(`/menu/deleteMsg/${id}`).then(res => {
 
         if (res.code === 200) {
@@ -354,7 +410,6 @@ export default {
 
       this.$api.menu.changeMsg('/menu/addMsg', {
         "name": addName.value,
-        "url": addUrl.value,
         "type": garage,
         "parentId": parentId
       }).then(res => {
@@ -379,7 +434,6 @@ export default {
 
 
       this.newMessage.name = r
-      this.newMessage.url = n
 
       updateId = i
       console.log(r, n)
@@ -390,7 +444,6 @@ export default {
 
       this.$api.menu.changeMsg('/menu/updateName', {
         "name": this.newMessage.name,
-        "url": this.newMessage.url,
         "id": updateId
       }).then(res => {
         if (res.code === 200) {
@@ -408,20 +461,62 @@ export default {
 
         this.getMsg()
       })
-
-
-    }
-    ,
-
-
+    },
     search() {
 
       if (input.value) {
         this.$api.menu.changeMsg("/menu/searchMsg", input.value).then(res => {
-          console.log(res)
-
+          console.log("s", res)
           if (res.code === 200) {
+            for (let i = 0; i < res.data.length; i++) {
+              if (res.data[i].type === 0) {
+                res.data[i].type = '目录'
+              }
+              if (res.data[i].type === 1) {
+                res.data[i].type = '菜单'
+              }
+              if (res.data[i].type === 2) {
+                res.data[i].type = '按钮'
+              }
+            }
+            for (let i = 0; i < this.allSearch.length; i++) {
+              for (let j = 0; j < res.data.length; j++) {
+                if (res.data[j].name === this.allSearch[i].name) {
+                  res.data[j].parentName = this.allSearch[i].parentName
+                }
+              }
+            }
             this.tableData = res.data
+            let time1 = ''
+            let time2 = ''
+            for (let i = 0; i < this.tableData.length; i++) {
+              time1 = this.dateFormat(this.tableData[i].createTime);
+              this.tableData[i].createTime = time1
+              if (this.tableData[i].lastUpdateTime) {
+                time2 = this.dateFormat(this.tableData[i].lastUpdateTime);
+                this.tableData[i].lastUpdateTime = time2
+              }
+              if (this.tableData[i].children) {
+                for (let j = 0; j < this.tableData[i].children.length; j++) {
+                  time1 = this.dateFormat(this.tableData[i].children[j].createTime);
+                  this.tableData[i].children[j].createTime = time1
+                  if (this.tableData[i].children[j].lastUpdateTime) {
+                    time2 = this.dateFormat(this.tableData[i].children[j].lastUpdateTime);
+                    this.tableData[i].children[j].lastUpdateTime = time2
+                  }
+                  if (this.tableData[i].children[j].children) {
+                    for (let k = 0; k < this.tableData[i].children[j].children.length; k++) {
+                      time1 = this.dateFormat(this.tableData[i].children[j].children[k].createTime);
+                      this.tableData[i].children[j].children[k].createTime = time1
+                      if (this.tableData[i].children[j].children[k].lastUpdateTime) {
+                        time2 = this.dateFormat(this.tableData[i].children[j].children[k].lastUpdateTime);
+                        this.tableData[i].children[j].children[k].lastUpdateTime = time2
+                      }
+                    }
+                  }
+                }
+              }
+            }
           } else {
             this.getMsg()
           }
@@ -430,25 +525,18 @@ export default {
         this.getMsg()
       }
 
-    }
-    ,
-
-    handleSizeChange(val) {
-      this.pageSize = val;
-      this.getMsg();
-    }
-    ,
-    handleCurrentChange(val) {
-      this.currentPage = val;
-      this.getMsg();
-    }
-    ,
-
+    },
     cleanMsg() {
 
       addName.value = null
-      addUrl.value = null
       this.value = ""
+    },
+    dateFormat(dateStr) {
+      const dt = new Date(dateStr);
+      const y = dt.getFullYear()
+      const m = dt.getMonth() + 1
+      const d = dt.getDate()
+      return `${y}-${m}-${d}`
     }
 
 
@@ -471,5 +559,9 @@ export default {
   width: 95%;
   top: 20px;
   left: 25px;
+  height: 500px;
+  background-image: url("https://cdn.acwing.com/static/web/img/background.png");
 }
+
+
 </style>
