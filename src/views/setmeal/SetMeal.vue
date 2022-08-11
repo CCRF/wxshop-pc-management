@@ -372,7 +372,7 @@ export default {
                   this.$message.error('删除失败')
                 }
             )
-        location.reload()
+      this.reload()
 
     },
 
@@ -413,6 +413,7 @@ export default {
                 location.reload()
             )
       }
+      this.reload()
     },
     //更新数据
     updateMeal(){
@@ -460,16 +461,13 @@ export default {
                 console.log(res)
             if (res.code==200){
               this.$message({message:'更新成功',type:'success'})
+            }else {
+              this.$message.error("发生错误了，请重试")
             }
             this.uploadImage = ""
-                // location.reload()
-              },err=>{
-            console.log("发生错误了",err)
-            this.$message({message:"发生错误了，请重试",type:'warning'})
-                this.uploadImage = ""
-          }
+              }
           )
-      location.reload()
+      this.reload()
     },
 
     m1(){
@@ -531,7 +529,18 @@ export default {
     cancel(){
       this.SecondaryMaskLayer = false
     },
-
+    reload(){
+      this.$api.SetMeal.findSetMeal(`/setMeal/selectByName/${this.Mealname}/${this.pageSize}`)
+          .then(res=> {
+            if (res.code === 200) {
+              this.$message({type: 'success', message: "查找成功"})
+              this.totalPage = res.data.totalCount
+              this.list = res.data.rows
+            } else {
+              this.$message({type: 'error', message: "查找失败，请重试"})
+            }
+          })
+    },
     handleSizeChange(val){
       this.currentPage = val
       console.log("输入的数据为",this.Mealname)
