@@ -32,7 +32,7 @@
         align="center"
         prop="id"
         label="编号"
-        width="50">
+        width="60">
     </el-table-column>
     <el-table-column
         prop="name"
@@ -44,7 +44,7 @@
         prop="nickName"
         align="center"
         label="昵称"
-        width="60">
+        width="80">
     </el-table-column>
 <!--    <el-table-column-->
 <!--        prop="avatar"-->
@@ -55,13 +55,7 @@
         prop="password"
         align="center"
         label="密码"
-        width="175">
-    </el-table-column>
-    <el-table-column
-        prop="salt"
-        align="center"
-        label="密码盐"
-        width="175">
+        width="180">
     </el-table-column>
     <el-table-column
         prop="email"
@@ -80,19 +74,19 @@
         align="center"
         label="账户状态"
         :formatter="statusFormat"
-        width="60">
+        width="100">
     </el-table-column>
     <el-table-column
         prop="deptId"
         align="center"
         label="部门编号"
-        width="60">
+        width="100">
     </el-table-column>
     <el-table-column
         prop="createBy"
         align="center"
         label="创建者"
-        width="60">
+        width="80">
     </el-table-column>
     <el-table-column
         align="center"
@@ -105,14 +99,14 @@
         prop="lastUpdateBy"
         align="center"
         label="最后更新"
-        width="60">
+        width="80">
     </el-table-column>
     <el-table-column
         prop="delFlag"
         align="center"
         label="封禁"
         :formatter="delFlagFormat"
-        width="60">
+        width="80">
     </el-table-column>
     <el-table-column
         fixed="right"
@@ -133,8 +127,10 @@
     </el-table-column>
   </el-table>
 
-  <el-dialog v-model="outerVisible" title="编辑" width="400px" >
-    <div><el-form
+  <el-dialog v-model="outerVisible" width="400px" >
+
+    <div>
+      <el-form
         status-icon
         label-width="80px"
         class="demo-ruleForm"
@@ -142,6 +138,22 @@
         :rules="rules"
         ref="updateData"
     >
+      <el-form-item label="头像">
+        <el-upload
+            action="http://localhost:8090/user/upload"
+            method="post"
+            show-file-list="false"
+            :headers="header"
+            name="file"
+            :before-upload="beforeAvatarUpload"
+            :multiple="false"
+            :on-success="successUpload"
+            >
+          <el-avatar size="large" class="herdIcon"><img :src="this.updateData.avatar" alt=""></el-avatar>
+        </el-upload>
+
+        
+      </el-form-item>
       <el-form-item label="编号" >
         <el-input v-model="this.updateData.id"  type="text" readonly/>
       </el-form-item>
@@ -151,14 +163,8 @@
       <el-form-item label="昵称">
         <el-input type="text" autocomplete="off" v-model="this.updateData.nickName"/>
       </el-form-item>
-      <el-form-item label="avatar">
-        <el-input v-model="this.updateData.avatar" type="text" autocomplete="off" />
-      </el-form-item>
       <el-form-item label="密码">
         <el-input v-model="this.updateData.password" type="password" show-password autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="密码盐">
-        <el-input v-model="this.updateData.salt" type="password" show-password autocomplete="off" />
       </el-form-item>
       <el-form-item label="邮箱" prop="email">
         <el-input type="text" autocomplete="off" v-model="this.updateData.email"/>
@@ -216,14 +222,8 @@
       <el-form-item label="昵称">
         <el-input type="text" autocomplete="off" v-model="this.insertData.nickName"/>
       </el-form-item>
-      <el-form-item label="avatar">
-        <el-input v-model="this.insertData.avatar" type="text" autocomplete="off" />
-      </el-form-item>
       <el-form-item label="密码">
         <el-input v-model="this.insertData.password" type="password" show-password autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="密码盐">
-        <el-input v-model="this.insertData.salt" type="password" show-password autocomplete="off" />
       </el-form-item>
       <el-form-item label="邮箱" prop="email">
         <el-input type="text" autocomplete="off" v-model="this.insertData.email"/>
@@ -315,7 +315,10 @@ export default {
 
   data(){
     return {
-
+      header:{
+        token:sessionStorage.getItem("token"),
+      },
+        ImageUrl:'',
         PageSize:7,
         currentPage:1,
         totalCount:"",
@@ -390,6 +393,35 @@ export default {
   },
 
   methods: {
+    beforeAvatarUpload(file){
+      console.log("file文件为",file)
+
+      const isJPG = file.type === "image/jpeg";
+      const isJPG2 = file.type === "image/jpg";
+      const isPNG = file.type === "image/png";
+      const isLt5M = file.size / 1024 / 1024 < 5;
+      if (!isJPG && !isJPG2 && !isPNG) {
+        ElMessage({
+          type:"warning",
+          message:"只支持jpg或png格式图片"
+        })
+      }
+      if (!isLt5M) {
+        ElMessage({
+          type:"warning",
+          message:"请上传5MB以内的图片!"
+        })
+      }
+      this.uploadImage = file
+      return (isJPG || isJPG2 || isPNG) && isLt5M;
+    },
+
+    successUpload(response){
+      if (response.code==200){
+        this.updateData.avatar = response.msg
+        console.log("返回的路径为",this.updateData.avatar)
+      }
+    },
     getRowKeys(row) {
       return row.id
     },
@@ -634,6 +666,8 @@ export default {
   top: 20px;
   left: 25px;
 }
-
+.herdIcon{
+  margin-left: 80px;
+}
 
 </style>
