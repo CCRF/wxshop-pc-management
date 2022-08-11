@@ -1,5 +1,5 @@
 <template>
-  <el-input v-model="input" class="search"  placeholder="搜索" style="width: 70%"/>
+  <el-input v-model="input" class="search"  placeholder="搜索" style="width: 70%"/>&nbsp;
   <el-button type="success" class="search" plain @click="search()" :disabled="clickButton">查询</el-button>
   <el-button type="warning" class="search" :disabled="clickAddButton" plain @click="dialogVisibleAdd = true">新增</el-button>
   <el-dialog
@@ -104,12 +104,12 @@
   </el-dialog>
 
   <div class="roleTable">
-  <el-table :data="tableData" stripe style="width: 100%">
+  <el-table :data="tableData" stripe style="width: 100%" border>
     <el-table-column prop="remark" label="角色" width="250"/>
-    <el-table-column prop="name" label="名字" width="300"/>
-    <el-table-column prop="createTime" label="创建时间" width="300"/>
+    <el-table-column prop="name" label="名字" width="250"/>
+    <el-table-column prop="createTime" label="创建时间" width="250"/>
     <el-table-column prop="lastUpdateTime" label="修改时间"/>
-    <el-table-column fixed="right" label="选择" width="230">
+    <el-table-column fixed="right" header-align="center" label="选择" width="230">
 
       <template #default="scope">
 
@@ -126,7 +126,7 @@
         </el-button
         >
 
-        <el-button type="primary" :plain="true" size="small" :disabled="clickDeleteButton"
+        <el-button type="danger" :plain="true" size="small" :disabled="clickDeleteButton"
                    @click="getId(scope.row.id);dialogVisibleDelete = true">
           删除
         </el-button>
@@ -234,14 +234,14 @@ export default {
           this.$api.roleManagement.getAll(`/role/getNewMsgByName/${name}`).then(res => {
 
             for (let j = 0; j < res.data.length; j++) {
-              if (res.data[j].name === "角色查看") {
+              if (res.data[j].perms === "sys:role:view") {
                 this.clickButton = false
-              } else if (res.data[j].name === "角色新增") {
+              } else if (res.data[j].perms === "sys:role:add") {
                 this.clickAddButton = false
-              } else if (res.data[j].name === "角色修改") {
+              } else if (res.data[j].perms === "sys:role:edit") {
                 this.clickUpdateButton = false
                 this.clickAuthorityButton = false
-              } else if (res.data[j].name === "角色删除") {
+              } else if (res.data[j].perms === "sys:role:delete") {
                 this.clickDeleteButton = false
               }
             }
@@ -539,11 +539,20 @@ export default {
     search() {
 
       if (input.value) {
-        this.$api.roleManagement.addMessage("/role/searchMsg", input.value).then(res => {
-          console.log(res)
+        this.$api.roleManagement.addMessage(`/role/searchMsg/${this.currentPage}/${this.pageSize}`, input.value).then(res => {
 
           if (res.code === 200) {
-            this.tableData = res.data
+            this.tableData = res.data.rows
+            for (let i = 0; i < this.tableData.length; i++) {
+              let time1 = this.dateFormat(this.tableData[i].createTime);
+              if (this.tableData[i].lastUpdateTime) {
+                let time2 = this.dateFormat(this.tableData[i].lastUpdateTime);
+                this.tableData[i].lastUpdateTime = time2
+              }
+              this.tableData[i].createTime = time1
+
+            }
+            this.totalCount = res.data.totalCount;
           } else {
             this.getMsg()
           }
@@ -552,8 +561,7 @@ export default {
         this.getMsg()
       }
 
-    }
-    ,
+    },
 
     handleSizeChange(val) {
       this.pageSize = val;
