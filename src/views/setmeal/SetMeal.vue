@@ -203,7 +203,7 @@
     <el-table :data="list" height="530px" style="border: rgba(159,156,156,0.5) 1px solid" >
       <el-table-column label="参 考 图 片" prop="picture" align="center">
         <template #default="scope">
-          <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setmeal'+scope.row.picture" fit="cover" alt="图片暂时没有加载出来哦"/>
+          <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setmeal/'+scope.row.picture" fit="cover" alt="图片暂时没有加载出来哦"/>
         </template>
       </el-table-column>
       <el-table-column prop="name" label="套 餐 名 称" align="center"/>
