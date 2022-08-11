@@ -79,9 +79,11 @@
               :value="item.value"
           />
         </el-select>
-        <el-image style="width: 100px; height: 100px" :src="this.value" fit="cover" v-show="value" alt="图片暂时没有加载出来哦"/>
+        <el-image style="width: 100px; height: 100px" :src="value" fit="cover" v-show="value" alt="图片暂时没有加载出来哦"/>
+        <br>
       </el-form-item>
       <el-form-item label="点我上传自己的图片">
+<!--        action="https://g1.glypro19.com/setMeal/upload"-->
           <el-upload
               action="http://localhost:8090/setMeal/upload"
               method="post"
@@ -93,7 +95,7 @@
               :on-success="successUpload"
           >
             <el-button>点击上传</el-button>
-            <el-image style="width: 100px; height: 100px" :src="this.uploadImage" fit="cover" v-show="false" alt="图片暂时没有加载出来哦"/>
+            <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setMeal/'+this.uploadImage" fit="cover" v-show="false" alt="图片暂时没有加载出来哦"/>
           </el-upload>
       </el-form-item>
     </el-form>
@@ -141,6 +143,7 @@
           />
         </el-select>
         <el-image style="width: 100px; height: 100px" :src="this.value" fit="cover" alt="图片暂时没有加载出来哦"/>
+        <el-image style="height: 100px;width: 100px" fit="cover" :src="updateValue" v-show="updateValue"/>
       </el-form-item>
       <el-form-item label="套 餐 内 容">
         <el-button type="primary" @click="SecondaryMaskLayer = true">点击与原有商品组合</el-button>
@@ -200,7 +203,7 @@
     <el-table :data="list" height="530px" style="border: rgba(159,156,156,0.5) 1px solid" >
       <el-table-column label="参 考 图 片" prop="picture" align="center">
         <template #default="scope">
-          <el-image style="width: 100px; height: 100px" :src="scope.row.picture" fit="cover" alt="图片暂时没有加载出来哦"/>
+          <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setmeal'+scope.row.picture" fit="cover" alt="图片暂时没有加载出来哦"/>
         </template>
       </el-table-column>
       <el-table-column prop="name" label="套 餐 名 称" align="center"/>
@@ -246,6 +249,7 @@
 <script>
 import {toRaw} from "vue";
 import {ElMessage} from "element-plus";
+import {deleteFile} from "../../http/modules/SetMeal";
 
 export default {
   name: "Main",
@@ -265,7 +269,7 @@ export default {
       file:"",
       modeList:[],
       //这些是与图片相关的,选择器（选择套餐图片的样式）
-      value:"",//新增套餐的值
+      value:"",//新增套餐的图片值
       updateValue:"",//修改套餐的值
 
       imageList:[],//套餐图片列表
@@ -320,8 +324,9 @@ export default {
         this.updateVisible = true
         for (let i = 0; i < this.goods.length; i++) {
           this.goods[i].value=0
-        console.log(row.id)
-        this.$api.SetMeal.findById(`/setMeal/selectById/${row.id}`)
+        }
+      console.log(row.id)
+      this.$api.SetMeal.findById(`/setMeal/selectById/${row.id}`)
             .then(res=>{
                   this.newList.id = res.id
                   this.newList.name = res.name
@@ -336,7 +341,7 @@ export default {
                   console.log("出错了",err)
                 }
             )
-      }
+
     },
     deleteSetMeal(msg){//删除提示
       this.DeleteRequest = true
@@ -366,7 +371,7 @@ export default {
                   this.$message.error('删除失败')
                 }
             )
-        location.reload()
+        // location.reload()
 
     },
 
@@ -396,16 +401,15 @@ export default {
             .then(res=>{
                   console.log(res)
                   if (res.code==200){
-                    this.$message({message:'提交成功',type:'success'})
+                    this.$message.success("提交成功")
+                    // this.$message({message:'提交成功',type:'success'})
                     this.uploadImage==""
                   }else {
                     this.$message({message:"提交失败！",type:'error'})
                     this.uploadImage==""
                   }
-                },err=>{
-                  console.log("发生错误了",err)
-                },
-                location.reload()
+                }
+                // location.reload()
             )
       }
     },
@@ -426,13 +430,28 @@ export default {
       data.name = this.newList.name
       data.flavor = this.newList.flavor
       data.description = this.newList.description
+      console.log("选择框的值为",this.updateValue)
+      if (this.uploadImage==""){//上传的值
+        if (this.updateValue==""){//原本更新选择框的值
+          data.picture=this.value//原来回显的值
+          console.log("this.value",this.value)
+        }else {
+          data.picture = this.updateValue
+          console.log("this.updateValue",this.updateValue)
+          console.log("原来的图片数据为：",this.updateValue)
+        }
 
-      if (this.uploadImage==""){
-        console.log(this.updateValue)
-        data.picture = this.updateValue
       }else {
-        console.log(this.uploadImage)
+        console.log("上传的值",this.uploadImage)
         data.picture = this.uploadImage
+        console.log("原来的图片数据为：",this.value)
+        this.$api.SetMeal.deleteFile("/setMeal/deleteFile",this.value)
+        .then(res=>{
+          console.log(res)
+          if (res.code==200){
+            console.log("删除成功")
+          }
+        })
       }
       this.updateVisible = false
       this.$api.SetMeal.addMeal("/setMeal/update",data)
@@ -449,7 +468,7 @@ export default {
                 this.uploadImage = ""
           }
           )
-      location.reload()
+      // location.reload()
     },
 
     m1(){

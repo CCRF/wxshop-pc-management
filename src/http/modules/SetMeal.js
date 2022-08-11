@@ -24,3 +24,6 @@ export function uploadImage(url,params){
 export function FindImages(url,params){
     return get(url,params)
 }
+export function deleteFile(url,params){
+    return post(url,params)
+}
