@@ -140,13 +140,11 @@
     >
       <el-form-item label="头像">
         <el-upload
-            action="http://localhost:8090/user/upload"
+            action="https://g1.glypro19.com/user/upload"
             method="post"
-            show-file-list="false"
+            :show-file-list="false"
             :headers="header"
-            name="file"
             :before-upload="beforeAvatarUpload"
-            :multiple="false"
             :on-success="successUpload"
             >
           <el-avatar size="large" class="herdIcon"><img :src="this.updateData.avatar" alt=""></el-avatar>
@@ -213,6 +211,18 @@
         :rules="rules"
         ref="insertData"
     >
+      <el-form-item label="头像">
+        <el-upload
+            action="https://g1.glypro19.com/user/upload"
+            method="post"
+            :show-file-list="false"
+            :headers="header"
+            :before-upload="beforeAvatarUpload"
+            :on-success="successUpload1"
+        >
+          <el-avatar size="large" class="herdIcon"><img :src="this.insertData.avatar" alt=""></el-avatar>
+        </el-upload>
+      </el-form-item>
       <el-form-item label="编号" prop="id">
         <el-input v-model="this.insertData.id"  type="text" />
       </el-form-item>
@@ -387,7 +397,7 @@ export default {
       roleData:[
       ],
       multipleSelection: [],
-      arr:[]
+      imghead:"https://g1.glypro19.com/img/avatar/",
 
       }
   },
@@ -417,9 +427,50 @@ export default {
     },
 
     successUpload(response){
-      if (response.code==200){
-        this.updateData.avatar = response.msg
-        console.log("返回的路径为",this.updateData.avatar)
+      let _this=this;
+      let path=this.updateData.avatar.replace('https://g1.glypro19.com/img/avatar/','')
+      if(this.insertData.avatar!=""&&this.insertData.avatar!=null){
+        this.$api.userManagement.deleteImg("/user/deleteImg/"+path).then(function (res){
+          if(res){
+            if (response.code==200){
+              _this.updateData.avatar = _this.imghead+response.msg;
+              console.log("返回的路径为",_this.updateData.avatar);
+              _this.$api.userManagement.updateUser("/user/updateUser",JSON.parse(JSON.stringify(_this.updateData)));
+            }else {
+              window.alert("上传失败")
+            }
+          }
+        });
+      }else{
+        if (response.code==200){
+          _this.updateData.avatar = _this.imghead+response.msg;
+          console.log("返回的路径为",_this.updateData.avatar);
+          _this.$api.userManagement.updateUser("/user/updateUser",JSON.parse(JSON.stringify(_this.updateData)));
+        }
+      }
+    },
+    successUpload1(response){
+      let _this=this;
+      let path=this.insertData.avatar.replace('https://g1.glypro19.com/img/avatar/','')
+      if(this.insertData.avatar!=""&&this.insertData.avatar!=null){
+        this.$api.userManagement.deleteImg("/user/deleteImg/"+path).then(function (res){
+          if(res){
+            if (response.code==200){
+              _this.insertData.avatar = _this.imghead+response.msg;
+              console.log("返回的路径为",_this.insertData.avatar);
+              _this.$api.userManagement.updateUser("/user/updateUser",JSON.parse(JSON.stringify(_this.insertData)));
+            }else {
+              window.alert("上传失败")
+            }
+          }
+
+        });
+      }else{
+        if (response.code==200) {
+          _this.insertData.avatar = _this.imghead + response.msg;
+          console.log("返回的路径为", _this.insertData.avatar);
+          _this.$api.userManagement.updateUser("/user/updateUser", JSON.parse(JSON.stringify(_this.insertData)));
+        }
       }
     },
     getRowKeys(row) {
@@ -457,7 +508,8 @@ export default {
     },
     deleteMore(){
       for(let i=0;i<this.multipleSelection.length;i++){
-        this.$api.userManagement.deleteUser("/user/deleteUser/"+this.multipleSelection[i].id)
+        this.$api.userManagement.deleteUser("/user/deleteUser/"+this.multipleSelection[i].id+"/"+
+            this.multipleSelection[i].avatar.replace('https://g1.glypro19.com/img/avatar/','')+"")
       }
       this.$alert("删除成功！")
       this.reload();
@@ -502,7 +554,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.$api.userManagement.deleteUser("/user/deleteUser/"+row.id).then(function (res){
+        this.$api.userManagement.deleteUser("/user/deleteUser/"+row.id+"/"+row.avatar.replace('https://g1.glypro19.com/img/avatar/','')+"").then(function (res){
         // axios.delete ("http://localhost:8090/user/deleteUser/"+row.id).then(function (res){
           if (res.data){
             _this.$alert(''+row.name+'删除成功','提示',{
