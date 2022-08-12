@@ -292,7 +292,7 @@ export default {
         )
       },
       getAllType() {
-        this.$api.goods.findGoods("/goods/findAllType").then(res => {
+        this.$api.category.findCategory("http://localhost:8090/category/findAllType").then(res => {
               // console.log("获取类型成功", res)
               this.typeOptions = res.data;
               // unshift从头部插入数据
@@ -372,7 +372,8 @@ export default {
         this.close()
         this.insertVisible = false
         this.insertData = this.$options.data().insertData
-        this.$router.go(0)
+        this.reload()
+        // this.$router.go(0)
       },
       update(row) {
         this.$api.goods.findGoods("/goods/selectGoodsById", {id: row.id}).then(res => {
@@ -402,7 +403,8 @@ export default {
         this.close()
         this.updateVisible = false
         this.updateData = this.$options.data().updateData
-        this.$router.go(0)
+        this.reload()
+        // this.$router.go(0)
       },
       deleteGoods(row) {
         console.log(row.id);
@@ -419,7 +421,8 @@ export default {
           type:'success',
           message:"删除成功"
         })
-        this.$router.go(0)
+        this.reload()
+        // this.$router.go(0)
       },
       close() {
         this.getAllType()
@@ -521,6 +524,14 @@ export default {
       },
       TypeManagement() {
         this.$router.push('category')
+      },
+      reload(){
+        let _this= this;
+        this.$route.path='/index/1'
+        this.$router.replace({path:this.$route.path}).then(function (){
+          _this.$route.path='/index/goods';
+          _this.$router.replace({path:_this.$route.path})
+        })
       }
     }
 }

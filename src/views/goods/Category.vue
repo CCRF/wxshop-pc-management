@@ -172,7 +172,8 @@ export default {
       )
       this.insertVisible = false
       this.insertData = this.$options.data().insertData
-      this.$router.go(0)
+      // this.$router.go(0)
+      this.reload()
     },
     // 获取当前对应行id的所有数据
     update(row) {
@@ -201,7 +202,8 @@ export default {
       )
       this.updateVisible = false
       this.updateData = this.$options.data().updateData
-      this.$router.go(0)
+      // this.$router.go(0)
+      this.reload()
     },
     // 删除对应行id的数据
     deleteCategory(row) {
@@ -218,8 +220,17 @@ export default {
             console.log(err)
           }
       )
-      this.$router.go(0)
+      // this.$router.go(0)
+      this.reload()
     },
+    reload(){
+      let _this= this;
+      this.$route.path='/index/1'
+      this.$router.replace({path:this.$route.path}).then(function (){
+        _this.$route.path='/index/goods';
+        _this.$router.replace({path:_this.$route.path})
+      })
+    }
   }
 }
 </script>
