@@ -35,3 +35,7 @@ export function findUserByMsg(url){
 export function insertUser(url,params){
     return post(url,params);
 }
+
+export function deleteImg(url){
+    return del(url);
+}
