@@ -29,11 +29,12 @@
       <el-button type="primary" @click="choAll">查询商品</el-button>
       <el-button type="primary"
                  @click="this.typeOptions.shift();this.insertVisible = true">新增商品</el-button>
-      <el-button type="success" @click="insertType">商品类型管理</el-button>
+      <el-button type="success" @click="TypeManagement">商品类型管理</el-button>
     </div>
     <div class="main">
       <el-table
           :data="goodsList.slice((pageInfo.currentPage - 1) * pageInfo.size, pageInfo.currentPage * pageInfo.size)"
+          :row-style="{height: '95px'}"
           border>
         <el-table-column prop="id" label="编号" width="60" />
         <el-table-column prop="type[0].name" label="商品类型" width="85" />
@@ -131,7 +132,7 @@
           <el-input v-model="insertData.remark" type="textarea" rows="3" resize="none"/>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click='insertGoods;insertData = this.$options.data().insertData' class="ml">提交</el-button>
+          <el-button type="primary" @click='insertGoods' class="ml">提交</el-button>
           <el-button type="info" @click='insertData = this.$options.data().insertData'>重置</el-button>
           <el-button type="info" @click='close; insertVisible = false'>取消</el-button>
         </el-form-item>
@@ -197,7 +198,7 @@
           <el-input v-model="updateData.remark" type="textarea" rows="3" resize="none"/>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click='updateGoods;updateData = this.$options.data().updateData' class="ml">保存</el-button>
+          <el-button type="primary" @click='updateGoods' class="ml">保存</el-button>
           <el-button type="info" @click='updateData = this.$options.data().updateData'>重置</el-button>
           <el-button type="info" @click='close; updateVisible = false'>取消</el-button>
         </el-form-item>
@@ -370,6 +371,7 @@ export default {
         )
         this.close()
         this.insertVisible = false
+        this.insertData = this.$options.data().insertData
         this.$router.go(0)
       },
       update(row) {
@@ -399,6 +401,7 @@ export default {
         )
         this.close()
         this.updateVisible = false
+        this.updateData = this.$options.data().updateData
         this.$router.go(0)
       },
       deleteGoods(row) {
@@ -515,6 +518,9 @@ export default {
       UhandleRemove() {
         this.Ushow = false
         this.UuploadDisabled = false;
+      },
+      TypeManagement() {
+        this.$router.push('category')
       }
     }
 }
@@ -556,5 +562,9 @@ export default {
   }
   .dis .el-upload--picture-card {
     display: none;
+  }
+  .el-image {
+    /*width: 85px;*/
+    /*height: 85px;*/
   }
 </style>
