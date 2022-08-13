@@ -21,8 +21,7 @@
   </div>
 
   <!--新增套餐（遮罩层）-->
-  <el-dialog v-model="dialogVisible" title="Tips" width="50%" draggable>
-    <span>请输入你想要添加的套餐信息吧</span>
+  <el-dialog v-model="dialogVisible" title="请输入你想要添加的套餐信息吧" width="50%" draggable>
     <br><br>
     <el-form
         label-width="100px"
@@ -46,7 +45,7 @@
       </el-form-item>
       <el-form-item label="套 餐 内 容">
         <el-button type="primary" @click="SecondaryMaskLayer = true">点击与原有商品组合</el-button>
-        <el-dialog v-model="SecondaryMaskLayer" title="Tips" width="60%" draggable>
+        <el-dialog v-model="SecondaryMaskLayer" title="商 品 信 息" width="35%" draggable>
           <el-table :data="goods" height="450" style="width: 100%">
             <el-table-column prop="name" label="商品名称" width="180" />
             <el-table-column prop="value" label="数量" width="180">
@@ -70,19 +69,26 @@
           <el-button type="primary" @click="CommoditySynthesis">提交</el-button>
         </el-dialog>
       </el-form-item>
-      <el-form-item label="套 餐 图 片">
-        <el-select v-model="value" class="m-2" placeholder="Select" size="large">
-          <el-option
-              v-for="item in imageList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-          />
-        </el-select>
-        <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setMeal/'+value" fit="cover" v-show="value" alt="图片暂时没有加载出来哦"/>
-        <br>
+      <el-form-item>
+        <el-descriptions :column="1" border>
+          <el-descriptions-item label="已选商品：" label-align="right" align="center"
+          >{{this.countGood}}</el-descriptions-item
+          >
+        </el-descriptions>
       </el-form-item>
-      <el-form-item label="点我上传自己的图片">
+<!--      <el-form-item label="套 餐 图 片">-->
+<!--        <el-select v-model="value" class="m-2" placeholder="Select" size="large">-->
+<!--          <el-option-->
+<!--              v-for="item in imageList"-->
+<!--              :key="item.value"-->
+<!--              :label="item.label"-->
+<!--              :value="item.value"-->
+<!--          />-->
+<!--        </el-select>-->
+<!--        <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setmeal/'+value" fit="cover" v-show="value" alt="图片暂时没有加载出来哦"/>-->
+<!--        <br>-->
+<!--      </el-form-item>-->
+      <el-form-item label="上 传 图 片">
 <!--        action="http://localhost:8090/setMeal/upload"-->
 
           <el-upload
@@ -96,8 +102,10 @@
               :on-success="successUpload"
           >
             <el-button>点击上传</el-button>
-            <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setMeal/'+this.uploadImage" fit="cover" v-show="false" alt="图片暂时没有加载出来哦"/>
+            <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setmeal/'+this.uploadImage" fit="cover" v-show="false" alt="图片暂时没有加载出来哦"/>
           </el-upload>
+
+        <el-image style="width: 100px;height: 100px" :src="'https://g1.glypro19.com/img/setmeal/'+this.uploadImage" v-show="uploadImage"/>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -111,8 +119,8 @@
   </el-dialog>
 
   <!--更新套餐（遮罩层）-->
-  <el-dialog v-model="updateVisible" title="Tips" width="50%" draggable>
-    <span>请输入你想要修改的套餐信息吧</span>
+  <el-dialog v-model="updateVisible" title="请输入你想要修改的套餐信息吧" width="50%" draggable>
+    <span></span>
     <br><br>
     <el-form
         label-width="100px"
@@ -134,22 +142,9 @@
       <el-form-item label="口 味">
         <el-input v-model="newList.flavor" />
       </el-form-item>
-      <el-form-item label="套 餐 图 片">
-        <el-select v-model="updateValue" class="m-2" placeholder="Select" size="large" clearable>
-          <el-option
-              v-for="item in imageList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-          />
-        </el-select>
-        <el-image style="width: 100px; height: 100px" :src="this.value" fit="cover" alt="图片暂时没有加载出来哦"/>
-        <el-image style="height: 100px;width: 100px" fit="cover" :src="updateValue" v-show="updateValue"/>
-      </el-form-item>
       <el-form-item label="套 餐 内 容">
         <el-button type="primary" @click="SecondaryMaskLayer = true">点击与原有商品组合</el-button>
-        <el-dialog v-model="SecondaryMaskLayer" title="组 合" width="45%" draggable>
-
+        <el-dialog v-model="SecondaryMaskLayer" title="组 合" width="35%" draggable>
           <el-table :data="goods" height="450" style="width: 100%">
             <el-table-column prop="name" label="商品名称" width="180" />
             <el-table-column prop="value" label="数量" width="180">
@@ -173,7 +168,26 @@
           <el-button type="primary" @click="CommoditySynthesis">确定</el-button>
         </el-dialog>
       </el-form-item>
-      <el-form-item label="点我上传自己的图片">
+      <el-form-item>
+        <el-descriptions :column="1" border>
+          <el-descriptions-item label="已选商品：" label-align="right" align="center"
+          >{{this.countGood}}</el-descriptions-item
+          >
+        </el-descriptions>
+      </el-form-item>
+      <el-form-item label="原 图 片">
+        <!--        <el-select v-model="value" class="m-2" placeholder="Select" size="large" clearable>-->
+        <!--          <el-option-->
+        <!--              v-for="item in imageList"-->
+        <!--              :key="item.value"-->
+        <!--              :label="item.label"-->
+        <!--              :value="item.value"-->
+        <!--          />-->
+        <!--        </el-select>-->
+        <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setmeal/'+value" fit="cover" alt="图片暂时没有加载出来哦" v-show="this.value"/>
+        &nbsp;&nbsp;&nbsp;
+      </el-form-item>
+      <el-form-item label="上 传 图 片">
         <el-upload
             action="https://g1.glypro19.com/setMeal/upload"
             method="post"
@@ -201,7 +215,7 @@
 
   <!--主要展示界面-->
   <div class="MainDisplay">
-    <el-table :data="list" height="530px" style="border: rgba(159,156,156,0.5) 1px solid" >
+    <el-table :data="list" height="530px" style="border: rgba(159,156,156,0.5) 1px solid;font-size: 17px">
       <el-table-column label="参 考 图 片" prop="picture" align="center">
         <template #default="scope">
           <el-image style="width: 100px; height: 100px" :src="'https://g1.glypro19.com/img/setmeal/'+scope.row.picture" fit="cover" alt="图片暂时没有加载出来哦"/>
@@ -216,7 +230,7 @@
       <el-table-column align="center" fixed="right" label="功能" >
         <template #default="scope">
 
-          <el-button size="small" @click="handleEdit(scope.row)"
+          <el-button size="small" @click="handleEdit(scope.row)" type="primary"
           >修改套餐
           </el-button>
           <el-button
@@ -322,6 +336,7 @@ export default {
 
     //通过id查询到数据回显在更新框中
     handleEdit(row){
+        this.countGood=""
         this.updateVisible = true
         for (let i = 0; i < this.goods.length; i++) {
           this.goods[i].value=0
@@ -331,7 +346,8 @@ export default {
             .then(res=>{
                   this.newList.id = res.id
                   this.newList.name = res.name
-                  this.newList.price = res.price
+                  this.newList.price = res.price.toFixed(2)//保留两位小数
+                  this.countGood=res.contain
                   this.newList.contain = res.contain
                   this.newList.description = res.description
                   this.newList.sale = res.sale
@@ -410,7 +426,7 @@ export default {
                     this.uploadImage==""
                   }
                 },
-                location.reload()
+                this.reload()
             )
       }
       this.reload()
@@ -421,14 +437,13 @@ export default {
       let data = {id:"" ,name: "", price: "", contain: "", description: "", sale: "", flavor: "",picture:""}
       data.id = this.newList.id
       data.sale = this.newList.sale
-      if (this.countGood==null){
+      if (this.countGood==""){
         //判断用户是否上传文件，上传了就使用用户的文件
         data.contain = this.newList.contain
-        data.price = this.newList.price
       }else {
         data.contain = this.countGood
-        data.price = this.PriceCount
       }
+      data.price = this.newList.price
       data.name = this.newList.name
       data.flavor = this.newList.flavor
       data.description = this.newList.description
@@ -471,6 +486,7 @@ export default {
     },
 
     m1(){
+      this.countGood=""
       this.dialogVisible = true
       this.newList=[]
       this.value =""
@@ -514,7 +530,7 @@ export default {
       //字符串拼接
       for (let i = 0; i < m2.length; i++) {
         const count = m2[i].name+"×"+m2[i].currentValue
-        priceCount = priceCount+m2[i].currentValue*m2[i].price
+        // priceCount = priceCount+m2[i].currentValue*m2[i].price
         goodList = goodList+count+"\n"
       }
       this.PriceCount = priceCount
@@ -616,7 +632,7 @@ export default {
                   response.data.push(i)
                 }else {
                   console.log(response.data[i])
-                  list.push({"label":"套餐"+[i],"value":'https://g1.glypro19.com/img/setMeal/'+response.data[i]})
+                  list.push({"label":"套餐"+[i],"value":'https://g1.glypro19.com/img/setmeal/'+response.data[i]})
                 }
               }
               console.log("列表为",list)
