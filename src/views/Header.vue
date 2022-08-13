@@ -2,7 +2,7 @@
   <div class="header">
       <!-- 右边区域 -->
       <div class="toolbar">
-        <div class="nickName">{{this.nickName}}</div>
+        <div class="nickName"><span>{{this.nickName}}</span></div>
         <el-dropdown>
 
             <el-avatar
@@ -75,5 +75,8 @@ export default {
       float: left;
       margin-top: 16px;
       margin-left: 94%;
+    }
+    span{
+      color: white;
     }
 </style>
