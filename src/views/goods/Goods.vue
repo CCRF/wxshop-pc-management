@@ -179,7 +179,7 @@
               ref="upload"
               :class="{dis: UuploadDisabled}"
               :disabled="UtypeDisabled"
-              action="http://localhost:8090/goods/upload"
+              action="https://g1.glypro19.com/goods/upload"
               list-type="picture-card"
               :before-upload="beforeUpload"
               :headers="header"
@@ -293,7 +293,7 @@ export default {
         )
       },
       getAllType() {
-        this.$api.category.findCategory("http://localhost:8090/category/findAllType").then(res => {
+        this.$api.category.findCategory("/category/findAllType").then(res => {
               // console.log("获取类型成功", res)
               this.typeOptions = res.data;
               // unshift从头部插入数据

@@ -129,7 +129,7 @@ export default {
   },
   methods: {
     getAllType() {
-      this.$api.category.findCategory("http://localhost:8090/category/findAllType").then(res => {
+      this.$api.category.findCategory("/category/findAllType").then(res => {
             console.log("获取Category成功", res)
             this.categoryList = res.data;
           }, err => {
@@ -146,7 +146,7 @@ export default {
     },
     // 通过输入框中的信息搜索（包括id、name、nickname、remark
     choAll() {
-      this.$api.category.findCategory("http://localhost:8090/category/selectCategoryByAllMsg", {msg: this.queryData}).then(res => {
+      this.$api.category.findCategory("/category/selectCategoryByAllMsg", {msg: this.queryData}).then(res => {
             // console.log(this.saleData,'@',this.typeData,'@',this.priceData,'@',this.queryData)
             console.log("通过All获取商品类型", res)
             this.categoryList = res.data
@@ -161,7 +161,7 @@ export default {
     insertCategory() {
       console.log(this.insertData)
       let data = this.insertData
-      this.$api.category.modifyCategory("http://localhost:8090/category/insertCategory",
+      this.$api.category.modifyCategory("/category/insertCategory",
           {id: this.categoryList.pop().id+1, name: data.name, nickname: data.nickname, remark: data.remark}).then(res => {
             // console.log(this.saleData,'@',this.typeData,'@',this.priceData,'@',this.queryData)
             console.log("新增类型", res)
@@ -177,7 +177,7 @@ export default {
     },
     // 获取当前对应行id的所有数据
     update(row) {
-      this.$api.category.findCategory("http://localhost:8090/category/selectCategoryById", {id: row.id}).then(res => {
+      this.$api.category.findCategory("/category/selectCategoryById", {id: row.id}).then(res => {
             console.log(row.id,"获取对应id数据", res)
             this.updateData = res.data
           }, err => {
@@ -191,7 +191,7 @@ export default {
     updateCategory() {
       console.log(this.updateData)
       let data = this.updateData
-      this.$api.category.modifyCategory("http://localhost:8090/category/updateCategory",
+      this.$api.category.modifyCategory("/category/updateCategory",
           {id: data.id, name: data.name, nickname: data.nickname, remark: data.remark}).then(res => {
             // console.log(this.saleData,'@',this.typeData,'@',this.priceData,'@',this.queryData)
             console.log("修改类型", res)
@@ -207,7 +207,7 @@ export default {
     },
     // 删除对应行id的数据
     deleteCategory(row) {
-      this.$api.category.modifyCategory("http://localhost:8090/category/deleteCategory", row.id).then(res => {
+      this.$api.category.modifyCategory("/category/deleteCategory", row.id).then(res => {
             console.log(row.id, "删除类型", res)
             if (res.code === 500 && res.msg === '数据删除失败') {
               ElMessage({
