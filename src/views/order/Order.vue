@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-    import {getCurrentInstance, h, onUpdated, onMounted, ref} from "vue";
+    import {getCurrentInstance, h, onMounted, onUpdated, ref} from "vue";
     import {NInput, NSelect} from "naive-ui";
     import {ElNotification} from 'element-plus';
 
@@ -52,6 +52,7 @@
     let data = ref();
     let getOrderStatus = 0;
     let insertCount = 0;
+    let deleteStatus = false
     const warn = message => {
         ElNotification({
             title: '叮！',
@@ -60,10 +61,19 @@
     }
     const checkedRowKeysRef = ref([]);
     const handleCheck = (rowKeys) => {
-        if (rowKeys.length > 3)
+        if (deleteStatus) {
+            warn("1")
+            rowKeys.splice(0, rowKeys.length - 1)
+            deleteStatus = false
+        }
+        if (rowKeys.length > 3) {
             warn("一次最多只能选择三条数据！")
-        else
+            rowKeys.pop()
+        } else {
+            // warn("")
             checkedRowKeysRef.value = rowKeys;
+        }
+
     }
 
     function handlePositiveClick() {
@@ -77,7 +87,7 @@
 
     let modifyingDataArr = []
     const saveData = () => {
-        console.log(modifyingDataArr);
+        // console.log(modifyingDataArr);
         proxy.$api.order.modifyOrder("/order/modifyOrder",
 
             modifyingDataArr
@@ -93,9 +103,9 @@
     }
 
     const insertOrder = () => {
-        if(getOrderStatus === 0)
+        if (getOrderStatus === 0)
             warn("请先查询订单再添加！")
-        else{
+        else {
             let temp = [];
             proxy.$api.order.insertOrder("/order/insert",
                 {
@@ -262,9 +272,9 @@
 
     })
     const deleteOrder = () => {
-        if(checkedRowKeysRef.value.length === 0)
+        if (checkedRowKeysRef.value.length === 0)
             warn("请先选择要删除的订单！")
-        else{
+        else {
             let temp = [];
             proxy.$api.order.deleteOrder("/order/deleteOrder", {
                 orderId: checkedRowKeysRef.value,
@@ -284,7 +294,8 @@
                         })
                     }
                     data.value = temp
-                    checkedRowKeysRef.value.splice(0,checkedRowKeysRef.value.length)
+                    checkedRowKeysRef.value.splice(0, checkedRowKeysRef.value.length)
+                    deleteStatus = true
                 },
                 err => {
                     warn(err.reason)
@@ -292,14 +303,14 @@
         }
     }
     const rowClassName = (row) => {
-        console.log(row)
+        // console.log(row)
         if (row.orderStatus === -1 || row.orderStatus === "-1") {
             return "too-old";
         }
         return "";
     }
     let columns = createColumns();
-    onMounted(()=>{
+    onMounted(() => {
         getOrder(1)
     })
     const getOrder = (i) => {
@@ -354,11 +365,11 @@
 
 </script>
 
-<style scoped>
+<style scoped lang="less">
   .n-data-table {
     margin: 10px 30px;
     width: 1200px;
-    height: 450px;
+    height: 577px;
     box-shadow: 25px 25px 40px -23px grey;
     background-color: #ffffff;
   }
@@ -369,6 +380,8 @@
     right: 200px;
     top: 100px;
     z-index: 7;
+    font-weight: 600;
+    font-size: 16px;
   }
 
   .n-button {
@@ -383,9 +396,17 @@
   }
 
   :deep(.too-old td) {
-    border: 1px solid #fc0017 !important;
-    border-radius: 7px;
+    /*border: 1px solid #fc0017 !important;*/
+    /*border-radius: 7px;*/
     animation: fade 1200ms;
+
+    input {
+      color: red;
+    }
+
+    div {
+      color: red;
+    }
   }
 
   :deep(.age) {
@@ -399,7 +420,6 @@
 
   @keyframes fade {
     from {
-
       opacity: 1.0;
     }
     50% {

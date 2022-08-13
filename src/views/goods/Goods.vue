@@ -29,11 +29,12 @@
       <el-button type="primary" @click="choAll">查询商品</el-button>
       <el-button type="primary"
                  @click="this.typeOptions.shift();this.insertVisible = true">新增商品</el-button>
-      <el-button type="success" @click="insertType">商品类型管理</el-button>
+      <el-button type="success" @click="TypeManagement">商品类型管理</el-button>
     </div>
     <div class="main">
       <el-table
           :data="goodsList.slice((pageInfo.currentPage - 1) * pageInfo.size, pageInfo.currentPage * pageInfo.size)"
+          :row-style="{height: '95px'}"
           border>
         <el-table-column prop="id" label="编号" width="60" />
         <el-table-column prop="type[0].name" label="商品类型" width="85" />
@@ -109,11 +110,12 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="商品图：">
+          <!-- action="http://localhost:8090/goods/upload" -->
           <el-upload
               ref="upload"
               :class="{dis: uploadDisabled}"
               :disabled="typeDisabled"
-              action="http://localhost:8090/goods/upload"
+              action="https://g1.glypro19.com/goods/upload"
               list-type="picture-card"
               :before-upload="beforeUpload"
               :headers="header"
@@ -131,7 +133,7 @@
           <el-input v-model="insertData.remark" type="textarea" rows="3" resize="none"/>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click='insertGoods;insertData = this.$options.data().insertData' class="ml">提交</el-button>
+          <el-button type="primary" @click='insertGoods' class="ml">提交</el-button>
           <el-button type="info" @click='insertData = this.$options.data().insertData'>重置</el-button>
           <el-button type="info" @click='close; insertVisible = false'>取消</el-button>
         </el-form-item>
@@ -197,7 +199,7 @@
           <el-input v-model="updateData.remark" type="textarea" rows="3" resize="none"/>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click='updateGoods;updateData = this.$options.data().updateData' class="ml">保存</el-button>
+          <el-button type="primary" @click='updateGoods' class="ml">保存</el-button>
           <el-button type="info" @click='updateData = this.$options.data().updateData'>重置</el-button>
           <el-button type="info" @click='close; updateVisible = false'>取消</el-button>
         </el-form-item>
@@ -291,7 +293,7 @@ export default {
         )
       },
       getAllType() {
-        this.$api.goods.findGoods("/goods/findAllType").then(res => {
+        this.$api.category.findCategory("http://localhost:8090/category/findAllType").then(res => {
               // console.log("获取类型成功", res)
               this.typeOptions = res.data;
               // unshift从头部插入数据
@@ -370,7 +372,9 @@ export default {
         )
         this.close()
         this.insertVisible = false
-        this.$router.go(0)
+        this.insertData = this.$options.data().insertData
+        this.reload()
+        // this.$router.go(0)
       },
       update(row) {
         this.$api.goods.findGoods("/goods/selectGoodsById", {id: row.id}).then(res => {
@@ -399,7 +403,9 @@ export default {
         )
         this.close()
         this.updateVisible = false
-        this.$router.go(0)
+        this.updateData = this.$options.data().updateData
+        this.reload()
+        // this.$router.go(0)
       },
       deleteGoods(row) {
         console.log(row.id);
@@ -416,7 +422,8 @@ export default {
           type:'success',
           message:"删除成功"
         })
-        this.$router.go(0)
+        this.reload()
+        // this.$router.go(0)
       },
       close() {
         this.getAllType()
@@ -515,6 +522,17 @@ export default {
       UhandleRemove() {
         this.Ushow = false
         this.UuploadDisabled = false;
+      },
+      TypeManagement() {
+        this.$router.push('category')
+      },
+      reload(){
+        let _this= this;
+        this.$route.path='/index/1'
+        this.$router.replace({path:this.$route.path}).then(function (){
+          _this.$route.path='/index/goods';
+          _this.$router.replace({path:_this.$route.path})
+        })
       }
     }
 }
@@ -556,5 +574,9 @@ export default {
   }
   .dis .el-upload--picture-card {
     display: none;
+  }
+  .el-image {
+    /*width: 85px;*/
+    /*height: 85px;*/
   }
 </style>

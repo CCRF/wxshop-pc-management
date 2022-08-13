@@ -77,6 +77,18 @@
 
 
                         })
+                  let _this=this;
+                  this.$api.userManagement.findUserByMsg("/user/findUserByMsg/"+this.loginForm.username).then(function (res){
+                    console.log("头像数据",res.data[0].avatar)
+                    console.log("昵称",res.data[0].nickName)
+                    sessionStorage.setItem("avatar",res.data[0].avatar)
+                    sessionStorage.setItem("nickName",res.data[0].nickName)
+
+
+
+                    //5、获取头像后再跳转到index.vue
+                    _this.$router.push("/index");
+                  })
 
                     //4、获取用户权限
                     // this.$api.user.findPermissions("/user/findPermissions", {'name': this.loginForm.username})
@@ -84,8 +96,8 @@
                     //     this.$store.commit('setPerms',res);
                     // })
 
-                    //5、跳转到index.vue
-                    this.$router.push("/index");
+
+
                 }, err => {
                     console.log("登录失败", err);
                 })
@@ -139,31 +151,5 @@
     }
   }
 
-  :deep(.too-old td) {
-    border: 1px solid #fc0017 !important;
-    border-radius: 7px;
-    animation: fade 1200ms;
-  }
 
-  :deep(.age) {
-    background-color: rgba(0, 128, 0, 0.75) !important;
-  }
-
-  :deep(.too-old .age) {
-    background-color: rgba(0, 0, 128, 0.75) !important;
-  }
-
-
-  @keyframes fade {
-    from {
-      opacity: 1.0;
-    }
-    50% {
-      opacity: 0.0;
-    }
-    to {
-      opacity: 1.0;
-    }
-
-  }
 </style>

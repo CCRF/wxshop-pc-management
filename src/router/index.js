@@ -7,6 +7,7 @@ import Order from "@/views/order/Order.vue";
 import SetMeal from "@/views/setmeal/SetMeal.vue";
 import MenuManagement from "../views/sys/MenuManagement";
 import Customer from "../views/customer/Customer";
+import Category from "@/views/goods/Category";
 import {createRouter, createWebHistory} from "vue-router";
 
 // 创建路由表
@@ -39,7 +40,7 @@ const routes = [
             {
                 path: "goods",
                 name: "Goods",
-                component: Goods,
+                component: Goods
             },
             {
                 path: "setmeal",
@@ -56,7 +57,11 @@ const routes = [
                 name: "Customer",
                 component: Customer,
             },
-
+            {
+                path: "category",
+                name: "Category",
+                component: Category,
+            }
         ]
     }
 ]

@@ -2,12 +2,13 @@
   <div class="header">
       <!-- 右边区域 -->
       <div class="toolbar">
+        <div class="nickName"><span>{{this.nickName}}</span></div>
         <el-dropdown>
 
             <el-avatar
                 fit="contain"
                 size="large"
-                src="https://thirdwx.qlogo.cn/mmopen/vi_32/fljYjwPxibUBzsiaNoZeZXVQnmY9ic99PVwFbhIw8BMXl3cxCVKt1ZbYzyNxmH1VVIyVK0g4Y0pibcs1uFua5ibLSbg/132"
+                :src="avatar"
             />
           <template #dropdown>
             <el-dropdown-menu>
@@ -38,9 +39,14 @@
 <script>
 export default {
     name: "HeaderPage",
-    data(){
+  created() {
+      this.avatar=sessionStorage.getItem('avatar')
+  },
+  data(){
       return{
-        logoutVisible:false
+        logoutVisible:false,
+        avatar:"",
+        nickName:sessionStorage.getItem("nickName"),
       }
     },
     methods:{
@@ -49,7 +55,8 @@ export default {
         sessionStorage.removeItem("token")
         sessionStorage.removeItem("username")
         this.$router.push("/");
-      }
+      },
+
     }
 }
 </script>
@@ -63,5 +70,13 @@ export default {
     .toolbar{
       text-align: right;
       padding: 15px 15px 0 0 ;
+    }
+    .nickName{
+      float: left;
+      margin-top: 16px;
+      margin-left: 94%;
+    }
+    span{
+      color: white;
     }
 </style>
