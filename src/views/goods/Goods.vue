@@ -110,11 +110,12 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="商品图：">
+          <!-- action="http://localhost:8090/goods/upload" -->
           <el-upload
               ref="upload"
               :class="{dis: uploadDisabled}"
               :disabled="typeDisabled"
-              action="http://localhost:8090/goods/upload"
+              action="https://g1.glypro19.com/goods/upload"
               list-type="picture-card"
               :before-upload="beforeUpload"
               :headers="header"
