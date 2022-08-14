@@ -10,10 +10,10 @@
     <n-button @click="deleteOrder">
       删除订单
     </n-button>
-    <n-button @click="insertOrder">
-      添加订单
+    <n-button @click="activate">
+      日期筛选
     </n-button>
-
+    <n-input v-model:value="search" type="text" placeholder="根据订单内容搜索" style="width: 180px;margin-left: 10px"/>
     <n-popconfirm
             @positive-click="handlePositiveClick"
             @negative-click="handleNegativeClick"
@@ -28,7 +28,7 @@
     <n-p> 你选中了ID为 {{ checkedRowKeysRef }} ，共计{{checkedRowKeysRef.length}}条订单。</n-p>
     <n-data-table
             :columns="columns"
-            :data="data"
+            :data="filterTableData"
             :pagination="pagination"
             :max-height="550"
             :scroll-x="1700"
@@ -40,29 +40,106 @@
     >
       <n-checkbox v-model:checked="value"/>
     </n-data-table>
+    <n-drawer v-model:show="active" :width="502" placement="top" style="height: 500px;">
+      <n-drawer-content title="请选择筛选的日期区间">
+        <n-calendar
+                id="cal1"
+                v-model:value="calendarValue"
+                #="{ year, month, date }"
+                @update:value="handleUpdateValue"
+                style="width: 500px;height: 320px;"
+        >
+          {{ year }}-{{ month }}-{{ date }}
+        </n-calendar>
+        <n-calendar
+                id="cal2"
+                v-model:value="calendarValue2"
+                #="{ year, month, date }"
+                @update:value="handleUpdateValue2"
+                style="width: 500px;height: 320px;"
+        >
+          {{ year }}-{{ month }}-{{ date }}
+        </n-calendar>
+        <n-button @click="confirmDate" type="info">
+          提交
+        </n-button>
+      </n-drawer-content>
+
+    </n-drawer>
   </div>
 </template>
 
 <script setup>
-    import {getCurrentInstance, h, onMounted, onUpdated, ref} from "vue";
+    import {computed, getCurrentInstance, h, onMounted, onUpdated, ref} from "vue";
     import {NInput, NSelect} from "naive-ui";
+    import {addDays} from "date-fns/esm";
     import {ElNotification} from 'element-plus';
 
     const {proxy} = getCurrentInstance();
-    let data = ref();
+    let data = ref([])
     let getOrderStatus = 0;
     let insertCount = 0;
     let deleteStatus = false
+    let calendarValue = ref(addDays(Date.now(), 1).valueOf());
+    let calendarValue2 = ref(addDays(Date.now(), 1).valueOf());
+    let chosenDate = ref([])
+    let total = []
+    let date1 = ''
+    let date2 = ''
+    const handleUpdateValue = (_, {year, month, date}) => {
+        chosenDate.value[0] = `${year}-${month}-${date}`
+    };
+    const handleUpdateValue2 = (_, {year, month, date}) => {
+        chosenDate.value[1] = `${year}-${month}-${date}`
+        // console.log(chosenDate.value)
+    };
+    let filterTableData = computed(() =>
+        data.value.filter(
+            d => {
+                return !search.value || d.list.indexOf(search.value) !== -1
+                // betweenDates(d.startTime)
+            }
+        )
+    )
+    const confirmDate = () => {
+        if (!chosenDate.value[0] || !chosenDate.value[1]) warn("请先选择日期")
+        else {
+            date1 = new Date(chosenDate.value[0]);
+            date2 = new Date(chosenDate.value[1]);
+
+            data.value = data.value.filter(
+                d => {
+                    return betweenDates(d.startTime)
+                }
+            )
+            active.value = false
+        }
+    };
+    const betweenDates = date => {
+        date = date.split(" ")[0]
+        if (date1 && date2) {
+            let ch = new Date(date)
+            return date1 < ch && ch < date2;
+        }
+        return false;
+    }
+    const active = ref(false);
+    const activate = () => {
+        active.value = true;
+        data.value = total
+    };
     const warn = message => {
         ElNotification({
             title: '叮！',
             message: h('i', {style: 'color: teal'}, message),
         })
     }
+
+    const search = ref('')
+
     const checkedRowKeysRef = ref([]);
     const handleCheck = (rowKeys) => {
         if (deleteStatus) {
-            warn("1")
             rowKeys.splice(0, rowKeys.length - 1)
             deleteStatus = false
         }
@@ -89,7 +166,6 @@
     const saveData = () => {
         // console.log(modifyingDataArr);
         proxy.$api.order.modifyOrder("/order/modifyOrder",
-
             modifyingDataArr
         ).then(
             res => {
@@ -170,7 +246,7 @@
                     value: row.startTime,
                     onUpdateValue(v) {
                         data.value[index].startTime = v;
-                        let temp = data.value[index]
+                        let temp = data.value[index];
                         delete temp.key
                         modifyingDataArr[row.id] = temp;
                     }
@@ -333,6 +409,7 @@
                         })
                     }
                     data.value = temp
+                    total = temp
                 },
                 err => {
                     warn(err.reason)
@@ -352,6 +429,7 @@
                     })
                 }
                 data.value = temp
+                total = temp
             },
             err => {
                 warn(err.reason)
@@ -378,7 +456,7 @@
     margin-left: 30px;
     position: absolute;
     right: 200px;
-    top: 100px;
+    top: 93px;
     z-index: 7;
     font-weight: 600;
     font-size: 16px;
@@ -415,6 +493,29 @@
 
   :deep(.too-old .age) {
     background-color: rgba(0, 0, 128, 0.75) !important;
+  }
+
+  .n-drawer {
+    position: relative;
+
+    #cal1 {
+      position: absolute;
+      top: 0;
+      left: 310px;
+    }
+
+    #cal2 {
+      position: absolute;
+      top: 0;
+      left: 840px;
+    }
+
+    .n-button {
+      position: absolute;
+      right: 1%;
+      bottom: 1%;
+    }
+
   }
 
 
