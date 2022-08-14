@@ -8,7 +8,7 @@
   <!-- 顾客数据表格 -->
   <div>
     <div class="tbDiv">
-    <el-table class="tb" :data="tableData" height="550" border stripe >
+    <el-table class="tb" :data="tableData" height="550" border stripe style="font-size: 17px">
       <el-table-column fixed prop="avatar" label="头像" width="110" >
         <template #default="scope">
           <el-image :src="scope.row.avatar"></el-image>
@@ -55,15 +55,15 @@
 
       <!-- 4-10名 -->
       <div class="rankSix">
-        <el-table :data="rank2" :show-header="false" :row-style="{height: '35px'}">
-          <el-table-column prop="id" label="序号" width="60" />
-          <el-table-column prop="avatar" label="头像" width="110" >
+        <el-table :data="rank2" :show-header="false" :row-style="{height: '35px'}" style="font-size: 17px">
+          <el-table-column prop="id" label="序号" width="50" />
+          <el-table-column prop="avatar" label="头像" width="100" >
             <template #default="scope">
               <el-avatar :src="scope.row.avatar"></el-avatar>
             </template>
           </el-table-column>
           <el-table-column prop="nickName" label="名称" width="120" />
-          <el-table-column prop="sum" label="消费" width="60" />
+          <el-table-column prop="sum" label="消费" width="80" />
         </el-table>
       </div>
     </div>
@@ -123,7 +123,7 @@ export default {
     width: 950px;
   }
   .rankDiv{
-    margin: -65px 0 0 90px; /* 外边距 */
+    margin: -65px 0 0 70px; /* 外边距 */
     padding: 0 0 0 5px; /* 内边距 */
 
     float: left;
