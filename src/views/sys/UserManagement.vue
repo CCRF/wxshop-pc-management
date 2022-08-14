@@ -38,36 +38,36 @@
         prop="name"
         align="center"
         label="名字"
-        width="80">
+        width="100">
     </el-table-column>
     <el-table-column
         prop="nickName"
         align="center"
         label="昵称"
-        width="80">
+        width="100">
     </el-table-column>
 <!--    <el-table-column-->
 <!--        prop="avatar"-->
 <!--        label="avatar"-->
 <!--        width="40">-->
 <!--    </el-table-column>-->
-    <el-table-column
-        prop="password"
-        align="center"
-        label="密码"
-        width="180">
-    </el-table-column>
+<!--    <el-table-column-->
+<!--        prop="password"-->
+<!--        align="center"-->
+<!--        label="密码"-->
+<!--        width="180">-->
+<!--    </el-table-column>-->
     <el-table-column
         prop="email"
         align="center"
         label="邮箱"
-        width="195">
+        width="220">
     </el-table-column>
     <el-table-column
         prop="mobile"
         align="center"
         label="电话号码"
-        width="120">
+        width="140">
     </el-table-column>
     <el-table-column
         prop="status"
@@ -86,33 +86,33 @@
         prop="createBy"
         align="center"
         label="创建者"
-        width="80">
+        width="100">
     </el-table-column>
     <el-table-column
         align="center"
         prop="createTime"
         label="创建时间"
         :formatter="timeFormatter"
-        width="165">
+        width="185">
     </el-table-column>
     <el-table-column
         prop="lastUpdateBy"
         align="center"
         label="最后更新"
-        width="80">
+        width="100">
     </el-table-column>
     <el-table-column
         prop="delFlag"
         align="center"
         label="封禁"
         :formatter="delFlagFormat"
-        width="80">
+        width="100">
     </el-table-column>
     <el-table-column
         fixed="right"
         align="center"
         label="操作"
-        width="160">
+        width="175">
       <template #default="scope">
         <el-button
             size="mini"
