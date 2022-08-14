@@ -482,8 +482,8 @@ export default {
       },
       successUpload(response) {
         if (response.code == 200) {
-          let m = response.msg.split("/")
-          this.insertData.picture = m[3]+"/"+m[4]
+          // console.log(this.typeOptions)
+          this.insertData.picture = this.typeOptions[this.insertData.type-1].nickname+"/"+response.msg
           // this.insertData.picture = m.substr(m.lastIndexOf("/")+1, m.length)
           console.log("返回的路径为", response.msg, this.insertData.picture)
           ElMessage({
